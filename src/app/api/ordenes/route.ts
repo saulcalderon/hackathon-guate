@@ -5,7 +5,7 @@ import type { ApiError } from '@/types/cotizaciones';
 
 /**
  * POST /api/ordenes
- * Creates a new purchase order managed by Findrai.
+ * Creates a new purchase order managed by Findr.ai.
  */
 export async function POST(
   request: Request
@@ -23,7 +23,7 @@ export async function POST(
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const orden = createOrden(body);
+  const orden = await createOrden(body);
   return NextResponse.json({ id: orden.id }, { status: 201 });
 }
 
@@ -32,6 +32,6 @@ export async function POST(
  * Returns all orders ordered by created_at DESC.
  */
 export async function GET(): Promise<NextResponse<OrdenCompra[] | ApiError>> {
-  const ordenes = getAllOrdenes();
+  const ordenes = await getAllOrdenes();
   return NextResponse.json(ordenes, { status: 200 });
 }

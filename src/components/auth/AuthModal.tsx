@@ -99,7 +99,7 @@ export default function AuthModal({
             <h2 className="text-[42px] font-semibold leading-none text-[#262626]">
               {mode === 'login' ? 'Entrar' : 'Regístrate'}
             </h2>
-            <p className="mt-4 text-[18px] text-[#7b7b7b]">Bienvenido a Findrai</p>
+            <p className="mt-4 text-[18px] text-[#7b7b7b]">Bienvenido a Findr.ai</p>
           </div>
 
           <form className="mt-10" onSubmit={handleSubmit}>

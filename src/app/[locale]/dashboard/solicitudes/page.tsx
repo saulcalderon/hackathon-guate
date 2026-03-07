@@ -4,16 +4,13 @@ import { getAllSesiones } from '@/lib/store/sesiones';
 import SesionesListado from '@/components/dashboard/SesionesListado';
 import type { SesionSolicitud } from '@/types/solicitudes';
 
-function getSesiones(): SesionSolicitud[] {
+export default async function SolicitudesPage() {
+  let sesiones: SesionSolicitud[] = [];
   try {
-    return getAllSesiones();
+    sesiones = await getAllSesiones();
   } catch {
-    return [];
+    // fallback when DB/store fails
   }
-}
-
-export default function SolicitudesPage() {
-  const sesiones = getSesiones();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">

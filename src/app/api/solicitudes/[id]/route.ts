@@ -16,7 +16,7 @@ export async function GET(
   { params }: RouteContext
 ): Promise<NextResponse<SesionSolicitud | ApiError>> {
   const { id } = await params;
-  const sesion = getSesion(id);
+  const sesion = await getSesion(id);
 
   if (!sesion) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 });
@@ -42,7 +42,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const updated = patchSesion(id, body);
+  const updated = await patchSesion(id, body);
 
   if (!updated) {
     return NextResponse.json({ error: 'Session not found' }, { status: 404 });

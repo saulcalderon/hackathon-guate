@@ -55,7 +55,7 @@ export default function Sidebar() {
               className="w-full h-full object-contain brightness-0 invert" 
             />
           </div>
-          <span className="text-xl font-bold tracking-tight">Findrai</span>
+          <span className="text-xl font-bold tracking-tight">Findr.ai</span>
         </Link>
       </div>
 

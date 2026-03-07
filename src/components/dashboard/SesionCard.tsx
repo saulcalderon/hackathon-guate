@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { Clock, MessageSquare, Users, ExternalLink } from 'lucide-react';
+import { Clock, MessageSquare, Users, ExternalLink, Eye } from 'lucide-react';
 import type { SesionSolicitud, EstadoSesion } from '@/types/solicitudes';
+import { RequestPreviewModal } from './RequestPreviewModal';
 
 interface SesionCardProps {
   sesion: SesionSolicitud;
@@ -36,22 +38,34 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function SesionCard({ sesion }: SesionCardProps) {
+  const [showPreview, setShowPreview] = useState(false);
   const estado = ESTADO_CONFIG[sesion.estado];
   const userMessages = sesion.mensajes.filter((m) => m.role === 'user').length;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all p-5 flex flex-col gap-3">
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 flex-1">
-          {sesion.descripcion}
-        </p>
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 ${estado.className}`}
-        >
-          {estado.label}
-        </span>
-      </div>
+    <>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all p-5 flex flex-col gap-3">
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 flex-1">
+            {sesion.descripcion}
+          </p>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="p-1.5 text-slate-400 hover:text-findrai-primary rounded-lg hover:bg-slate-100 transition-colors"
+              title="Vista previa (como impreso)"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${estado.className}`}
+            >
+              {estado.label}
+            </span>
+          </div>
+        </div>
 
       {/* Categories + urgency chips */}
       <div className="flex flex-wrap gap-1.5">
@@ -100,5 +114,14 @@ export default function SesionCard({ sesion }: SesionCardProps) {
         </Link>
       </div>
     </div>
+
+      {showPreview && (
+        <RequestPreviewModal
+          variant="solicitud"
+          solicitud={sesion}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
+    </>
   );
 }

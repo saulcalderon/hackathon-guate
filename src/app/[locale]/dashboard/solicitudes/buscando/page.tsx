@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import type { ResultadoProveedor } from '@/types/solicitudes';
 import type { FilteredProduct } from '@/lib/filter-results';
+import type { MaterialScrapeResult } from '@/app/api/scrape/route';
 
 interface VendorResult {
   vendor: string;
@@ -14,20 +15,16 @@ interface VendorResult {
   error?: string;
 }
 
-interface ExtractedMeta {
-  searchTerm: string;
-  quantity: number;
-  unit: string;
-  specs: string;
-}
-
 function mapToResultadoProveedor(
   vendor: string,
   product: FilteredProduct,
-  index: number
+  index: number,
+  materialName: string,
+  quantity: number,
+  unit: string
 ): ResultadoProveedor {
   return {
-    id: `scrape-${vendor.toLowerCase().replace(/\s+/g, '-')}-${index}`,
+    id: `scrape-${materialName.replace(/\s+/g, '-')}-${vendor.toLowerCase().replace(/\s+/g, '-')}-${index}`,
     nombre: vendor,
     descripcion_producto: product.title + (product.brand ? ` — ${product.brand}` : ''),
     precio: product.price,
@@ -40,6 +37,9 @@ function mapToResultadoProveedor(
     url_referencia: product.url,
     disponibilidad: 'disponible',
     calificacion: Math.round(product.matchScore * 5 * 10) / 10,
+    material_descripcion: materialName,
+    cantidad: quantity,
+    unidad: unit,
   };
 }
 
@@ -50,8 +50,7 @@ function BuscandoContent() {
 
   const [loading, setLoading] = useState(true);
   const [steps, setSteps] = useState<string[]>([]);
-  const [results, setResults] = useState<VendorResult[]>([]);
-  const [extracted, setExtracted] = useState<ExtractedMeta | null>(null);
+  const [materials, setMaterials] = useState<MaterialScrapeResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [creatingSession, setCreatingSession] = useState(false);
 
@@ -60,8 +59,7 @@ function BuscandoContent() {
 
     setLoading(true);
     setError(null);
-    setResults([]);
-    setExtracted(null);
+    setMaterials([]);
     setSteps([]);
 
     try {
@@ -99,11 +97,7 @@ function BuscandoContent() {
             const event = JSON.parse(line) as {
               type: string;
               message?: string;
-              searchTerm?: string;
-              quantity?: number;
-              unit?: string;
-              specs?: string;
-              results?: VendorResult[];
+              materials?: MaterialScrapeResult[];
               error?: string;
             };
 
@@ -111,14 +105,8 @@ function BuscandoContent() {
               setSteps((prev) => [...prev, event.message!]);
             }
 
-            if (event.type === 'complete') {
-              setResults((event.results ?? []) as VendorResult[]);
-              setExtracted({
-                searchTerm: event.searchTerm ?? '',
-                quantity: event.quantity ?? 1,
-                unit: event.unit ?? 'unidad',
-                specs: event.specs ?? '',
-              });
+            if (event.type === 'complete' && event.materials) {
+              setMaterials(event.materials);
             }
 
             if (event.type === 'error') {
@@ -144,15 +132,24 @@ function BuscandoContent() {
     return () => controller.abort();
   }, [q, runScrape]);
 
+  const hasResults = materials.some((m) => m.results.some((r) => r.products.length > 0));
+
   const handleContinuar = useCallback(async () => {
-    if (!extracted || results.length === 0) return;
+    if (!hasResults || materials.length === 0) return;
 
     const allResultados: ResultadoProveedor[] = [];
-    results.forEach((vr) => {
-      vr.products.forEach((p, i) => {
-        allResultados.push(mapToResultadoProveedor(vr.vendor, p, i));
-      });
-    });
+    for (const mat of materials) {
+      for (const vr of mat.results) {
+        vr.products.forEach((p, i) => {
+          allResultados.push(
+            mapToResultadoProveedor(vr.vendor, p, i, mat.materialName, mat.quantity, mat.unit)
+          );
+        });
+      }
+    }
+
+    const isSingleMaterial = materials.length === 1;
+    const first = materials[0];
 
     setCreatingSession(true);
     try {
@@ -165,7 +162,9 @@ function BuscandoContent() {
           modo: 'inmediato',
           urgencia: 'normal',
           prioridades: ['precio'],
-          presupuesto_referencial: null,
+          presupuesto: null,
+          cantidad: isSingleMaterial ? first.quantity : null,
+          unidad: isSingleMaterial ? first.unit : null,
           resultados: allResultados,
         }),
       });
@@ -183,21 +182,12 @@ function BuscandoContent() {
       setError(err instanceof Error ? err.message : 'Error de red');
       setCreatingSession(false);
     }
-  }, [extracted, results, q, router]);
+  }, [materials, hasResults, q, router]);
 
   if (!q?.trim()) {
     router.replace('/dashboard/solicitudes/nueva');
     return null;
   }
-
-  const allProducts = results.flatMap((r) =>
-    r.products.map((p) => ({ ...p, vendor: r.vendor }))
-  );
-  const quantity = extracted?.quantity ?? 1;
-  const bestPrice =
-    allProducts.length > 0
-      ? Math.min(...allProducts.map((p) => p.price * quantity))
-      : null;
 
   return (
     <div className="max-w-5xl mx-auto pb-10">
@@ -215,19 +205,16 @@ function BuscandoContent() {
         </p>
       </div>
 
-      {extracted && results.length > 0 && (
+      {materials.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-            Buscado: {extracted.searchTerm}
-          </span>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-            {extracted.quantity} {extracted.unit}
-          </span>
-          {extracted.specs && (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-              {extracted.specs}
+          {materials.map((m) => (
+            <span
+              key={m.materialName}
+              className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
+            >
+              {m.materialName}: {m.quantity} {m.unit}
             </span>
-          )}
+          ))}
         </div>
       )}
 
@@ -258,18 +245,39 @@ function BuscandoContent() {
         </div>
       )}
 
-      {!loading && results.length > 0 && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {results.map((vr) => (
-              <VendorColumn
-                key={vr.vendor}
-                result={vr}
-                bestPrice={bestPrice}
-                quantity={quantity}
-              />
-            ))}
-          </div>
+      {!loading && hasResults && (
+        <div className="space-y-8">
+          {materials.map((mat) => {
+            const allProducts = mat.results.flatMap((r) =>
+              r.products.map((p) => ({ ...p, vendor: r.vendor }))
+            );
+            const bestPrice =
+              allProducts.length > 0
+                ? Math.min(...allProducts.map((p) => p.price * mat.quantity))
+                : null;
+
+            return (
+              <div key={mat.materialName}>
+                <h3 className="text-lg font-bold text-slate-900 mb-3">
+                  {mat.materialName}
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  {mat.quantity} {mat.unit}
+                  {mat.specs && ` • ${mat.specs}`}
+                </p>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {mat.results.map((vr) => (
+                    <VendorColumn
+                      key={vr.vendor}
+                      result={vr}
+                      bestPrice={bestPrice}
+                      quantity={mat.quantity}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
 
           <div className="flex justify-center pt-4">
             <button
@@ -283,9 +291,15 @@ function BuscandoContent() {
         </div>
       )}
 
-      {!loading && results.length === 0 && !error && extracted === null && (
+      {!loading && !hasResults && !error && materials.length === 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
           <p className="text-sm text-slate-500">Iniciando búsqueda…</p>
+        </div>
+      )}
+
+      {!loading && !hasResults && materials.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+          <p className="text-sm text-slate-500">No se encontraron productos para los materiales buscados.</p>
         </div>
       )}
     </div>
@@ -301,20 +315,12 @@ function VendorColumn({
   bestPrice: number | null;
   quantity: number;
 }) {
-  const { vendor, products, searchUrl, error } = result;
+  const { vendor, products, error } = result;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <h2 className="text-base font-bold text-slate-900">{vendor}</h2>
-        <a
-          href={searchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[10px] text-slate-500 underline hover:text-findrai-primary"
-        >
-          Ver en sitio
-        </a>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -330,12 +336,9 @@ function VendorColumn({
             const total = product.price * quantity;
             const isBest = bestPrice !== null && total === bestPrice;
             return (
-              <a
+              <div
                 key={i}
-                href={product.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative block rounded-xl border border-slate-200 p-4 transition-colors hover:bg-slate-50"
+                className="relative block rounded-xl border border-slate-200 p-4"
                 title={product.matchReason}
               >
                 {isBest && (
@@ -363,7 +366,7 @@ function VendorColumn({
                 >
                   Coincidencia: {Math.round(product.matchScore * 100)}%
                 </span>
-              </a>
+              </div>
             );
           })}
       </div>

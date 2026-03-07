@@ -23,13 +23,15 @@ export async function POST(
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const sesion = createSesion({
+  const sesion = await createSesion({
     descripcion,
     categorias,
     modo,
     urgencia,
     prioridades,
     presupuesto: body.presupuesto ?? null,
+    cantidad: body.cantidad ?? null,
+    unidad: body.unidad ?? null,
     resultados,
   });
 
@@ -41,6 +43,6 @@ export async function POST(
  * Returns all sessions ordered by created_at DESC.
  */
 export async function GET(): Promise<NextResponse<SesionSolicitud[] | ApiError>> {
-  const sesiones = getAllSesiones();
+  const sesiones = await getAllSesiones();
   return NextResponse.json(sesiones, { status: 200 });
 }

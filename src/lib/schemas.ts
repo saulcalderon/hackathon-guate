@@ -110,6 +110,8 @@ export const vendorInvoiceSchema = z.object({
   iva: z.number(),
   total: z.number(),
   deliveryEstimate: z.string().optional(),
+  commission: z.number().optional(),
+  moneda: z.enum(['GTQ', 'USD', 'SVC']).optional(),
 });
 
 export const optimizationResultSchema = z.object({

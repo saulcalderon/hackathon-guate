@@ -10,17 +10,32 @@ interface ComprarModalProps {
   proveedorDisplay: string;
   sesionId: string;
   onClose: () => void;
+  cantidadInicial?: number | null;
+  unidadInicial?: string | null;
 }
 
 const MONEDA_SYMBOL: Record<string, string> = { GTQ: 'Q', USD: '$', SVC: '₡' };
+
+function parseCantidadFromInput(input: string): number {
+  const match = input.trim().match(/^\d+/);
+  return match ? Math.max(1, parseInt(match[0], 10)) : 1;
+}
 
 export default function ComprarModal({
   proveedor,
   proveedorDisplay,
   sesionId,
   onClose,
+  cantidadInicial,
+  unidadInicial,
 }: ComprarModalProps) {
-  const [cantidad, setCantidad] = useState('1');
+  const defaultCantidad =
+    cantidadInicial != null && cantidadInicial > 0
+      ? unidadInicial
+        ? `${cantidadInicial} ${unidadInicial}`
+        : String(cantidadInicial)
+      : '1';
+  const [cantidad, setCantidad] = useState(defaultCantidad);
   const [notas, setNotas] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -28,7 +43,9 @@ export default function ComprarModal({
   const sym = MONEDA_SYMBOL[proveedor.moneda] ?? '';
   const precioBase = proveedor.precio;
   const comisionMonto = parseFloat((precioBase * (COMISION_FINDRAI_PCT / 100)).toFixed(2));
-  const totalConComision = parseFloat((precioBase + comisionMonto).toFixed(2));
+  const totalPorUnidad = parseFloat((precioBase + comisionMonto).toFixed(2));
+  const qty = parseCantidadFromInput(cantidad);
+  const totalGeneral = parseFloat((totalPorUnidad * qty).toFixed(2));
 
   const handleConfirmar = async () => {
     setLoading(true);
@@ -41,7 +58,7 @@ export default function ComprarModal({
           proveedor_nombre: proveedor.nombre,
           proveedor_display: proveedorDisplay,
           descripcion_producto: proveedor.descripcion_producto,
-          cantidad: cantidad.trim() || '1',
+          cantidad: cantidad.trim() || defaultCantidad,
           precio_estimado: precioBase,
           moneda: proveedor.moneda,
           notas_cliente: notas.trim() || undefined,
@@ -113,7 +130,7 @@ export default function ComprarModal({
                 value={cantidad}
                 onChange={(e) => setCantidad(e.target.value)}
                 placeholder="Ej: 200 sacos, 5 unidades, 1 pallet…"
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 transition-colors"
+                className="w-full px-4 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 bg-white transition-colors"
               />
             </div>
 
@@ -127,7 +144,7 @@ export default function ComprarModal({
                 onChange={(e) => setNotas(e.target.value)}
                 placeholder="Dirección de entrega, fecha requerida, especificaciones especiales…"
                 rows={3}
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 resize-none transition-colors"
+                className="w-full px-4 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 resize-none bg-white transition-colors"
               />
             </div>
 
@@ -141,15 +158,21 @@ export default function ComprarModal({
                 <span className="font-semibold">{sym} {precioBase.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between text-sm text-slate-500">
-                <span>Gestión Findrai ({COMISION_FINDRAI_PCT}%)</span>
+                <span>Gestión Findr.ai ({COMISION_FINDRAI_PCT}%)</span>
                 <span>+ {sym} {comisionMonto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-green-700 border-t border-green-200 pt-2 mt-1">
                 <span>Total estimado</span>
-                <span>{sym} {totalConComision.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+                <span>{sym} {totalPorUnidad.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
               </div>
+              {qty > 1 && (
+                <div className="flex justify-between text-sm font-bold text-green-800 border-t border-green-200 pt-2 mt-1">
+                  <span>Total ({qty} {unidadInicial ?? 'unidades'})</span>
+                  <span>{sym} {totalGeneral.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+                </div>
+              )}
               <p className="text-xs text-slate-400 mt-1">
-                Findrai gestiona la compra, logística y entrega. Precio final puede variar según negociación.
+                Findr.ai gestiona la compra, logística y entrega. Precio final puede variar según negociación.
               </p>
             </div>
 
