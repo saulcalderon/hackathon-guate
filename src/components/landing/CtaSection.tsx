@@ -38,7 +38,7 @@ export default function CtaSection({
             onClick={onPrimaryAction}
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-accent hover:bg-white text-findrai-primary font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
-            {isAuthenticated ? 'Go to dashboard' : isLoadingSession ? 'Validando...' : 'Start using Findrai'}{' '}
+            {isAuthenticated ? 'Go to dashboard' : isLoadingSession ? 'Validando...' : 'Start using Findr.ai'}{' '}
             <ArrowRight className="w-5 h-5" />
           </button>
           <button

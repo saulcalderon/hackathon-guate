@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ArrowRight, Play, FileText, Cpu, SplitSquareHorizontal, CheckCircle, LogOut } from "lucide-react";
+import { ArrowRight, Play, Globe, Cpu, SplitSquareHorizontal, CheckCircle, LogOut } from "lucide-react";
 import gsap from "gsap";
 import { useTranslations } from "next-intl";
 
@@ -106,7 +106,7 @@ export default function Hero({
               ref={containerRef}
               className="relative w-full h-full max-h-[400px] flex items-center justify-center"
             >
-                {/* Step 1: Upload */}
+                {/* Step 1: Scrape vendors */}
                 <div ref={step1Ref} className="absolute inset-x-8 inset-y-8 flex flex-col items-center justify-center bg-white rounded-2xl border-2 border-dashed border-slate-300 shadow-sm overflow-hidden">
                   {/* Decorative background files */}
                   <div className="absolute top-4 left-4 w-10 h-14 bg-slate-50 border border-slate-200 rounded flex flex-col items-center pt-2 gap-1 -rotate-12 opacity-60 shadow-sm">
@@ -119,7 +119,7 @@ export default function Hero({
                   </div>
 
                   <div className="w-16 h-16 rounded-full bg-blue-50 text-findrai-primary flex items-center justify-center mb-4 z-10 shadow-sm group-hover:scale-110 transition-transform">
-                    <FileText className="w-8 h-8" />
+                    <Globe className="w-8 h-8" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-800 mb-2 z-10">{t("step1Title")}</h3>
                   <p className="text-sm text-slate-500 text-center px-4 max-w-xs mb-4 z-10">{t("step1Desc")}</p>
