@@ -1,6 +1,13 @@
-import { Bell, Search } from "lucide-react";
+ 'use client';
+
+import { Bell, Search } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function Header() {
+  const { session } = useAuth();
+  const email = session?.user.email ?? 'Usuario autenticado';
+  const initials = email.slice(0, 2).toUpperCase();
+
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30">
       {/* Search Bar */}
@@ -28,11 +35,13 @@ export default function Header() {
         {/* User Profile (Single User Mode) */}
         <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
           <div className="hidden md:flex flex-col items-end">
-            <span className="text-sm font-bold text-slate-800 leading-tight">Admin User</span>
-            <span className="text-xs text-slate-500 font-medium">Acme Corp</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">
+              {email}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">Cuenta activa</span>
           </div>
           <div className="w-9 h-9 rounded-full bg-findrai-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            AU
+            {initials}
           </div>
         </div>
       </div>

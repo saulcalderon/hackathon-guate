@@ -1,6 +1,20 @@
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, LogOut, Play } from 'lucide-react';
 
-export default function Hero() {
+type HeroProps = {
+  isAuthenticated: boolean;
+  isLoadingSession: boolean;
+  userEmail: string | null;
+  onPrimaryAction: () => void;
+  onLogout: () => void;
+};
+
+export default function Hero({
+  isAuthenticated,
+  isLoadingSession,
+  userEmail,
+  onPrimaryAction,
+  onLogout,
+}: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-white pt-10 md:pt-16 lg:pt-24 pb-16 md:pb-24">
       {/* Background gradients */}
@@ -11,12 +25,36 @@ export default function Hero() {
 
       <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
         {/* Header/Logo */}
-        <div className="flex items-center justify-between mb-16 md:mb-24">
+        <div className="mb-16 flex items-center justify-between md:mb-24">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-findrai-primary to-findrai-medium flex items-center justify-center shadow-lg shadow-findrai-primary/20">
               <span className="text-white font-bold text-2xl leading-none">F</span>
             </div>
             <span className="text-2xl font-bold text-slate-900 tracking-tight">Findrai</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isAuthenticated && userEmail ? (
+              <span className="hidden text-sm text-slate-500 md:inline">{userEmail}</span>
+            ) : null}
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onPrimaryAction}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                {isLoadingSession ? 'Validando...' : 'Entrar'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -39,10 +77,18 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-primary hover:bg-findrai-secondary text-white font-semibold text-lg transition-all shadow-[0_8px_20px_rgb(2,72,115,0.2)] hover:shadow-[0_8px_25px_rgb(2,72,115,0.3)] hover:-translate-y-0.5 flex items-center justify-center gap-2">
-              Start comparing invoices <ArrowRight className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={onPrimaryAction}
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-primary hover:bg-findrai-secondary text-white font-semibold text-lg transition-all shadow-[0_8px_20px_rgb(2,72,115,0.2)] hover:shadow-[0_8px_25px_rgb(2,72,115,0.3)] hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            >
+              {isAuthenticated ? 'Ir al dashboard' : 'Start comparing invoices'}{' '}
+              <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 hover:text-findrai-primary font-semibold text-lg transition-all border border-slate-200 hover:border-findrai-light hover:bg-slate-50 hover:shadow-sm flex items-center justify-center gap-2 group">
+            <button
+              type="button"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 hover:text-findrai-primary font-semibold text-lg transition-all border border-slate-200 hover:border-findrai-light hover:bg-slate-50 hover:shadow-sm flex items-center justify-center gap-2 group"
+            >
               <Play className="w-5 h-5 text-slate-400 group-hover:text-findrai-primary transition-colors" />{" "}
               See how it works
             </button>
