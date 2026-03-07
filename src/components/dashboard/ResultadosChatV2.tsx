@@ -17,6 +17,8 @@ import {
   Trophy,
   Ban,
   ShoppingCart,
+  Check,
+  FileText,
 } from 'lucide-react';
 import type { ResultadoProveedor, ChatMessage, EstadoSesion } from '@/types/solicitudes';
 import type { ChatApiResponse } from '@/types/solicitudes';
@@ -30,6 +32,8 @@ interface ResultadosChatProps {
   sessionId?: string;
   initialMessages?: ChatMessage[];
   sesionEstado?: EstadoSesion;
+  proveedorElegido?: string | null;
+  onProveedorElegido?: (proveedorDisplay: string) => void;
 }
 
 const MONEDA_SYMBOL: Record<string, string> = {
@@ -45,7 +49,7 @@ const DISPONIBILIDAD_CONFIG = {
 };
 
 function parseSugerencias(text: string): string[] {
-  const match = text.match(/SUGERENCIAS:\s*(\[.*?\])/s);
+  const match = text.match(/SUGERENCIAS:\s*(\[[\s\S]*?\])/);
   if (!match) return [];
   try {
     const arr = JSON.parse(match[1]) as unknown;
@@ -57,122 +61,144 @@ function parseSugerencias(text: string): string[] {
 }
 
 function stripSugerencias(text: string): string {
-  return text.replace(/\n*SUGERENCIAS:\s*\[.*?\]/s, '').trim();
+  return text.replace(/\n*SUGERENCIAS:\s*\[[\s\S]*?\]/, '').trim();
 }
 
 function ProveedorResultCard({
   r,
   rank,
-  sesionId,
+  proveedorDisplay,
+  isSelected,
+  onSelect,
+  isMejorPrecio,
+  canSelect,
 }: {
   r: ResultadoProveedor;
   rank: number;
-  sesionId?: string;
+  proveedorDisplay: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  isMejorPrecio: boolean;
+  canSelect: boolean;
 }) {
   const sym = MONEDA_SYMBOL[r.moneda] ?? '';
   const disp = DISPONIBILIDAD_CONFIG[r.disponibilidad];
-  const [showModal, setShowModal] = useState(false);
-  const proveedorDisplay = `Proveedor ${String.fromCharCode(64 + rank)}`;
 
   return (
-    <>
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-findrai-primary/10 text-findrai-primary font-bold text-sm flex items-center justify-center shrink-0">
-              {rank}
-            </div>
-            <div>
+    <div
+      className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
+        isSelected ? 'ring-2 ring-findrai-primary border-findrai-primary' : 'border-slate-200'
+      }`}
+    >
+      <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-findrai-primary/10 text-findrai-primary font-bold text-sm flex items-center justify-center shrink-0">
+            {rank}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
               <p className="font-bold text-slate-900 text-sm leading-tight">{r.nombre}</p>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mt-1 ${disp.className}`}>
-                {disp.label}
-              </span>
+              {isMejorPrecio && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                  Mejor precio
+                </span>
+              )}
             </div>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-xl font-bold text-findrai-primary">
-              {sym} {r.precio.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-            </p>
-            <p className="text-xs text-slate-400">{r.moneda}</p>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mt-1 ${disp.className}`}>
+              {disp.label}
+            </span>
           </div>
         </div>
-
-        <div className="px-4 pt-3 pb-2">
-          <p className="text-xs text-slate-600 leading-relaxed">{r.descripcion_producto}</p>
+        <div className="text-right shrink-0">
+          <p className="text-xl font-bold text-findrai-primary">
+            {sym} {r.precio.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs text-slate-400">{r.moneda}</p>
         </div>
+      </div>
 
-        <div className="px-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            {r.tiempo_entrega}
-          </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <CreditCard className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            {r.condiciones_pago}
-          </div>
-          {r.garantia && (
-            <div className="flex items-center gap-1.5 text-xs text-slate-600 col-span-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              {r.garantia}
-            </div>
-          )}
+      <div className="px-4 pt-3 pb-2">
+        <p className="text-xs text-slate-600 leading-relaxed">{r.descripcion_producto}</p>
+      </div>
+
+      <div className="px-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
+        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          {r.tiempo_entrega}
         </div>
-
-        <div className="px-4 pb-3 grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
-          <div>
-            <div className="flex items-center gap-1 mb-1.5">
-              <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
-              <span className="text-xs font-semibold text-green-700">Pros</span>
-            </div>
-            <ul className="space-y-1">
-              {r.pros.map((p, i) => (
-                <li key={i} className="text-xs text-slate-600 flex items-start gap-1">
-                  <span className="text-green-500 mt-0.5 shrink-0">+</span>
-                  {p}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <div className="flex items-center gap-1 mb-1.5">
-              <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
-              <span className="text-xs font-semibold text-red-600">Contras</span>
-            </div>
-            <ul className="space-y-1">
-              {r.contras.map((c, i) => (
-                <li key={i} className="text-xs text-slate-600 flex items-start gap-1">
-                  <span className="text-red-400 mt-0.5 shrink-0">−</span>
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+          <CreditCard className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          {r.condiciones_pago}
         </div>
-
-        {/* Comprar con Findrai */}
-        {sesionId && r.disponibilidad !== 'sin_stock' && (
-          <div className="px-4 pb-4 border-t border-slate-100 pt-3">
-            <button
-              onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors shadow-sm"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Comprar con Findrai — nosotros gestionamos todo
-            </button>
+        {r.garantia && (
+          <div className="flex items-center gap-1.5 text-xs text-slate-600 col-span-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            {r.garantia}
           </div>
         )}
       </div>
 
-      {showModal && sesionId && (
-        <ComprarModal
-          proveedor={r}
-          proveedorDisplay={proveedorDisplay}
-          sesionId={sesionId}
-          onClose={() => setShowModal(false)}
-        />
+      <div className="px-4 pb-3 grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+        <div>
+          <div className="flex items-center gap-1 mb-1.5">
+            <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
+            <span className="text-xs font-semibold text-green-700">Pros</span>
+          </div>
+          <ul className="space-y-1">
+            {r.pros.map((p, i) => (
+              <li key={i} className="text-xs text-slate-600 flex items-start gap-1">
+                <span className="text-green-500 mt-0.5 shrink-0">+</span>
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <div className="flex items-center gap-1 mb-1.5">
+            <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
+            <span className="text-xs font-semibold text-red-600">Contras</span>
+          </div>
+          <ul className="space-y-1">
+            {r.contras.map((c, i) => (
+              <li key={i} className="text-xs text-slate-600 flex items-start gap-1">
+                <span className="text-red-400 mt-0.5 shrink-0">−</span>
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {canSelect && r.disponibilidad !== 'sin_stock' && (
+        <div className="px-4 pb-4 border-t border-slate-100 pt-3">
+          <button
+            onClick={onSelect}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-colors ${
+              isSelected
+                ? 'bg-findrai-primary/10 text-findrai-primary border border-findrai-primary/30'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+            }`}
+          >
+            {isSelected ? (
+              <>
+                <Check className="w-4 h-4" />
+                Seleccionado
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" />
+                Elegir este proveedor
+              </>
+            )}
+          </button>
+        </div>
       )}
-    </>
+    </div>
   );
+}
+
+function getProveedorDisplay(rank: number): string {
+  return `Proveedor ${String.fromCharCode(64 + rank)}`;
 }
 
 export default function ResultadosChat({
@@ -182,6 +208,8 @@ export default function ResultadosChat({
   sessionId,
   initialMessages,
   sesionEstado,
+  proveedorElegido,
+  onProveedorElegido,
 }: ResultadosChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [input, setInput] = useState('');
@@ -189,9 +217,27 @@ export default function ResultadosChat({
   const [initDone, setInitDone] = useState(false);
   const [sugerencias, setSugerencias] = useState<string[]>([]);
   const [sugerenciasUsadas, setSugerenciasUsadas] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const sortedResultados = [...resultados].sort((a, b) => a.precio - b.precio);
+  const cheapestId = sortedResultados[0]?.id ?? null;
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!proveedorElegido || resultados.length === 0) return;
+    const sorted = [...resultados].sort((a, b) => a.precio - b.precio);
+    const idx = sorted.findIndex((_, i) => getProveedorDisplay(i + 1) === proveedorElegido);
+    if (idx >= 0) setSelectedId(sorted[idx].id);
+  }, [proveedorElegido, resultados]);
+  const selectedResult = sortedResultados.find((r) => r.id === selectedId);
+  const selectedDisplay = selectedResult
+    ? getProveedorDisplay(sortedResultados.indexOf(selectedResult) + 1)
+    : null;
+
   const isDisabled = sesionEstado === 'resuelta' || sesionEstado === 'cancelada';
+  const canSelect = !isDisabled && !!sessionId;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -324,10 +370,46 @@ export default function ResultadosChat({
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {resultados.map((r, idx) => (
-          <ProveedorResultCard key={r.id} r={r} rank={idx + 1} sesionId={sessionId} />
+        {sortedResultados.map((r, idx) => (
+          <ProveedorResultCard
+            key={r.id}
+            r={r}
+            rank={idx + 1}
+            proveedorDisplay={getProveedorDisplay(idx + 1)}
+            isSelected={selectedId === r.id}
+            onSelect={() => setSelectedId(selectedId === r.id ? null : r.id)}
+            isMejorPrecio={r.id === cheapestId}
+            canSelect={canSelect}
+          />
         ))}
       </div>
+
+      {canSelect && selectedResult && selectedDisplay && (
+        <div className="flex flex-col gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <p className="text-sm text-slate-600">
+            <span className="font-semibold text-slate-800">{selectedDisplay}</span> seleccionado. Procede a crear la cotización para tu empresa.
+          </p>
+          <button
+            onClick={() => {
+              onProveedorElegido?.(selectedDisplay);
+              setShowModal(true);
+            }}
+            className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors shadow-sm"
+          >
+            <FileText className="w-4 h-4" />
+            Proceder con cotización
+          </button>
+        </div>
+      )}
+
+      {showModal && sessionId && selectedResult && selectedDisplay && (
+        <ComprarModal
+          proveedor={selectedResult}
+          proveedorDisplay={selectedDisplay}
+          sesionId={sessionId}
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
       {sesionEstado === 'resuelta' && (
         <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">

@@ -63,6 +63,19 @@ export default function SesionPage({ params }: PageProps) {
     router.push('/dashboard/solicitudes/nueva');
   }, [router]);
 
+  const handleProveedorElegido = useCallback(
+    async (proveedorDisplay: string) => {
+      if (!sessionId) return;
+      await fetch(`/api/solicitudes/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proveedor_elegido: proveedorDisplay }),
+      });
+      setSesion((prev) => (prev ? { ...prev, proveedor_elegido: proveedorDisplay } : prev));
+    },
+    [sessionId]
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -140,6 +153,8 @@ export default function SesionPage({ params }: PageProps) {
             sessionId={sessionId}
             initialMessages={sesion.mensajes}
             sesionEstado={sesion.estado}
+            proveedorElegido={sesion.proveedor_elegido}
+            onProveedorElegido={handleProveedorElegido}
           />
         </div>
       </div>

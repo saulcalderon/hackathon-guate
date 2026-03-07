@@ -11,7 +11,7 @@ import {
   CheckCheck,
   XCircle,
 } from 'lucide-react';
-import type { SesionSolicitud, EstadoSesion } from '@/types/solicitudes';
+import type { SesionSolicitud } from '@/types/solicitudes';
 
 interface SesionTimelineProps {
   sesion: SesionSolicitud;
@@ -70,12 +70,17 @@ function buildEtapas(sesion: SesionSolicitud): Etapa[] {
     });
   });
 
-  if (tieneDecision) {
+  if (sesion.proveedor_elegido) {
+    etapas.push({
+      key: 'elegido',
+      label: `Elegido: ${sesion.proveedor_elegido}`,
+      icon: <Award className="w-4 h-4" />,
+      active: true,
+    });
+  } else if (tieneDecision) {
     etapas.push({
       key: 'decision',
-      label: sesion.proveedor_elegido
-        ? `Elegido: ${sesion.proveedor_elegido}`
-        : 'Decisión tomada',
+      label: 'Decisión tomada',
       icon: <Award className="w-4 h-4" />,
       active: true,
     });

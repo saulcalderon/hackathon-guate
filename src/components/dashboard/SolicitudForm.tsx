@@ -77,7 +77,7 @@ export default function SolicitudForm({ onSubmit, loading }: SolicitudFormProps)
           onChange={(e) => setDescripcion(e.target.value)}
           placeholder="Ej: Necesito 200 sacos de cemento Portland tipo 1 para obra en zona 10, entrega en sitio. También 50 quintales de arena de río."
           rows={4}
-          className="w-full px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 bg-white transition-colors"
+          className="w-full px-4 py-3 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 bg-white transition-colors"
           disabled={loading}
         />
         <p className="text-xs text-slate-400 mt-1">
@@ -219,7 +219,7 @@ export default function SolicitudForm({ onSubmit, loading }: SolicitudFormProps)
           value={presupuesto}
           onChange={(e) => setPresupuesto(e.target.value)}
           placeholder="Ej: Q 15,000 / $2,000 USD"
-          className="w-full max-w-xs px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 bg-white transition-colors"
+          className="w-full max-w-xs px-4 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 bg-white transition-colors"
           disabled={loading}
         />
       </div>

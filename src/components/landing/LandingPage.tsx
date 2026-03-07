@@ -10,6 +10,7 @@ import ProductPreview from '@/components/landing/ProductPreview';
 import CtaSection from '@/components/landing/CtaSection';
 import AuthModal from '@/components/auth/AuthModal';
 import { useAuth } from '@/components/auth/AuthProvider';
+import Navbar from '@/components/landing/Navbar';
 
 export default function LandingPage() {
   const { session, loading, isConfigured, signOut } = useAuth();
@@ -57,6 +58,11 @@ export default function LandingPage() {
 
   return (
     <>
+      <Navbar 
+        onLogin={handlePrimaryAction} 
+        isAuthenticated={Boolean(session)}
+        onLogout={handleLogout}
+      />
       <main className="min-h-screen bg-white font-sans text-slate-900 selection:bg-findrai-primary/20">
         <Hero
           isAuthenticated={Boolean(session)}
