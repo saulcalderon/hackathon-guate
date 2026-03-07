@@ -1,11 +1,17 @@
 'use client';
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { LayoutDashboard, FileText, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useAuth();
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -17,6 +23,20 @@ export default function Sidebar() {
 
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    const { error } = await signOut();
+    setIsSigningOut(false);
+
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+
+    setErrorMessage('');
+    router.push('/?login=1');
+  };
 
   return (
     <div className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white min-h-screen fixed left-0 top-0">
@@ -53,6 +73,11 @@ export default function Sidebar() {
 
       {/* Sidebar Footer */}
       <div className="p-4 border-t border-slate-800 flex flex-col gap-1">
+        {errorMessage ? (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-100 mb-1">
+            {errorMessage}
+          </div>
+        ) : null}
         <Link
           href="/dashboard/settings"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
@@ -60,9 +85,14 @@ export default function Sidebar() {
           <Settings className="w-5 h-5" />
           <span className="font-medium">Configuración</span>
         </Link>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors text-left w-full mt-2">
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors text-left w-full mt-2 disabled:cursor-not-allowed disabled:opacity-60"
+        >
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">Cerrar sesión</span>
+          <span className="font-medium">{isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}</span>
         </button>
       </div>
     </div>
