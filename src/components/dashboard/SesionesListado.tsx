@@ -43,7 +43,7 @@ export default function SesionesListado({ sesiones }: SesionesListadoProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por descripción o categoría…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 bg-white transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary placeholder-slate-400 bg-white transition-colors"
           />
         </div>
         <div className="flex gap-1.5">

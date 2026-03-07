@@ -286,7 +286,7 @@ export default function ResultadosChat({
       <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
         <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p className="text-xs text-amber-800">
-          <span className="font-semibold">Datos de demostración.</span> Los precios y proveedores son simulados para mostrar el flujo del producto. La integración con búsqueda real en sitios guatemaltecos y salvadoreños está en desarrollo.
+          {/* <span className="font-semibold">Datos de demostración.</span> Los precios y proveedores son simulados para mostrar el flujo del producto. La integración con búsqueda real en sitios guatemaltecos y salvadoreños está en desarrollo. */}
         </p>
       </div>
 
@@ -421,7 +421,7 @@ export default function ResultadosChat({
                 placeholder="Ej: ¿Cuál recomiendas si necesito entrega hoy? ¿El precio incluye IVA?"
                 rows={2}
                 disabled={loading}
-                className="flex-1 px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 transition-colors"
+                className="flex-1 px-4 py-3 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 bg-white transition-colors"
               />
               <button
                 onClick={() => handleSend()}

@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────
-// Ordenes de compra — gestionadas por Findrai
+// Ordenes de compra — gestionadas por Findr.ai
 // ────────────────────────────────────────────────────────────
 
 export type EstadoOrden = 'pendiente' | 'en_proceso' | 'completada' | 'cancelada';

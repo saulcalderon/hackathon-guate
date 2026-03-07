@@ -1,5 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
+export function isSupabaseAdminConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SECRET_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return Boolean(url && key);
+}
+
 /**
  * Server-only admin client (uses service role / secret key — bypasses RLS).
  * NEVER import this in client components or expose it to the browser.

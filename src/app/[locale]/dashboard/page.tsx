@@ -61,9 +61,14 @@ function computeStats(sesiones: SesionSolicitud[], ordenes: OrdenCompra[]) {
   return { total, activas, resueltas, proveedoresTotal, ordenesActivas, topCategoria };
 }
 
-export default function DashboardPage() {
-  const sesiones = (() => { try { return getAllSesiones(); } catch { return []; } })();
-  const ordenes  = (() => { try { return getAllOrdenes();  } catch { return []; } })();
+export default async function DashboardPage() {
+  let sesiones: SesionSolicitud[] = [];
+  let ordenes: OrdenCompra[] = [];
+  try {
+    [sesiones, ordenes] = await Promise.all([getAllSesiones(), getAllOrdenes()]);
+  } catch {
+    // fallback to empty when DB/store fails
+  }
   const stats = computeStats(sesiones, ordenes);
   const recentSesiones = sesiones.slice(0, 5);
   const recentOrdenes  = ordenes.slice(0, 3);

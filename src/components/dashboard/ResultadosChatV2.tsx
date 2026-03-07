@@ -5,7 +5,6 @@ import {
   Send,
   Loader2,
   CheckCircle2,
-  AlertTriangle,
   Clock,
   CreditCard,
   ShieldCheck,
@@ -16,14 +15,16 @@ import {
   RefreshCw,
   Trophy,
   Ban,
-  ShoppingCart,
   Check,
   FileText,
+  Split,
 } from 'lucide-react';
 import type { ResultadoProveedor, ChatMessage, EstadoSesion } from '@/types/solicitudes';
 import type { ChatApiResponse } from '@/types/solicitudes';
 import type { ApiError } from '@/types/cotizaciones';
+import type { OptimizationResult } from '@/lib/schemas';
 import ComprarModal from '@/components/dashboard/ComprarModal';
+import { InvoicePanel } from '@/components/invoice-panel';
 
 interface ResultadosChatProps {
   resultados: ResultadoProveedor[];
@@ -34,6 +35,8 @@ interface ResultadosChatProps {
   sesionEstado?: EstadoSesion;
   proveedorElegido?: string | null;
   onProveedorElegido?: (proveedorDisplay: string) => void;
+  cantidadInicial?: number | null;
+  unidadInicial?: string | null;
 }
 
 const MONEDA_SYMBOL: Record<string, string> = {
@@ -96,8 +99,13 @@ function ProveedorResultCard({
             {rank}
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="font-bold text-slate-900 text-sm leading-tight">{r.nombre}</p>
+              {r.material_descripcion && (
+                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                  {r.material_descripcion}
+                </span>
+              )}
               {isMejorPrecio && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                   Mejor precio
@@ -112,6 +120,11 @@ function ProveedorResultCard({
         <div className="text-right shrink-0">
           <p className="text-xl font-bold text-findrai-primary">
             {sym} {r.precio.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+            {(r.cantidad ?? 1) > 1 && (
+              <span className="ml-1 text-sm font-normal text-slate-500">
+                × {r.cantidad} {r.unidad ?? 'unidad'} = {sym}{((r.precio * (r.cantidad ?? 1))).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+              </span>
+            )}
           </p>
           <p className="text-xs text-slate-400">{r.moneda}</p>
         </div>
@@ -210,6 +223,8 @@ export default function ResultadosChat({
   sesionEstado,
   proveedorElegido,
   onProveedorElegido,
+  cantidadInicial,
+  unidadInicial,
 }: ResultadosChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [input, setInput] = useState('');
@@ -218,10 +233,24 @@ export default function ResultadosChat({
   const [sugerencias, setSugerencias] = useState<string[]>([]);
   const [sugerenciasUsadas, setSugerenciasUsadas] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [optimizeResult, setOptimizeResult] = useState<OptimizationResult | null>(null);
+  const [optimizeLoading, setOptimizeLoading] = useState(false);
+  const [confirmingOrders, setConfirmingOrders] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const sortedResultados = [...resultados].sort((a, b) => a.precio - b.precio);
-  const cheapestId = sortedResultados[0]?.id ?? null;
+  const sortedResultados = [...resultados].sort((a, b) => {
+    const totalA = a.precio * (a.cantidad ?? 1);
+    const totalB = b.precio * (b.cantidad ?? 1);
+    return totalA - totalB;
+  });
+  const cheapestIds = (() => {
+    const byMaterial = new Map<string, string>();
+    for (const r of sortedResultados) {
+      const key = r.material_descripcion ?? '__single__';
+      if (!byMaterial.has(key)) byMaterial.set(key, r.id);
+    }
+    return new Set(byMaterial.values());
+  })();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -362,12 +391,42 @@ export default function ResultadosChat({
         </button>
       </div>
 
-      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800">
-          <span className="font-semibold">Datos de demostración.</span> Los precios y proveedores son simulados para mostrar el flujo del producto. La integración con búsqueda real en sitios guatemaltecos y salvadoreños está en desarrollo.
-        </p>
-      </div>
+      {canSelect && resultados.length > 0 && (
+        <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <p className="text-sm font-semibold text-slate-800">
+            Cotización optimizada
+          </p>
+          <p className="text-xs text-slate-600">
+            Findr.ai asigna cada ítem al proveedor con mejor precio. Revisa el desglose y crea órdenes por proveedor.
+          </p>
+          <button
+            onClick={async () => {
+              if (!sessionId || optimizeLoading) return;
+              setOptimizeLoading(true);
+              try {
+                const res = await fetch(`/api/solicitudes/${sessionId}/optimize`, {
+                  method: 'POST',
+                });
+                if (res.ok) {
+                  const data = (await res.json()) as OptimizationResult;
+                  setOptimizeResult(data);
+                }
+              } finally {
+                setOptimizeLoading(false);
+              }
+            }}
+            disabled={optimizeLoading || !sessionId}
+            className="flex items-center justify-center gap-2 py-3 text-sm font-semibold text-white bg-findrai-primary hover:bg-findrai-secondary rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm"
+          >
+            {optimizeLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Split className="w-4 h-4" />
+            )}
+            Ver cotización optimizada
+          </button>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         {sortedResultados.map((r, idx) => (
@@ -378,7 +437,7 @@ export default function ResultadosChat({
             proveedorDisplay={getProveedorDisplay(idx + 1)}
             isSelected={selectedId === r.id}
             onSelect={() => setSelectedId(selectedId === r.id ? null : r.id)}
-            isMejorPrecio={r.id === cheapestId}
+            isMejorPrecio={cheapestIds.has(r.id)}
             canSelect={canSelect}
           />
         ))}
@@ -408,6 +467,43 @@ export default function ResultadosChat({
           proveedorDisplay={selectedDisplay}
           sesionId={sessionId}
           onClose={() => setShowModal(false)}
+          cantidadInicial={selectedResult.cantidad ?? cantidadInicial}
+          unidadInicial={selectedResult.unidad ?? unidadInicial}
+        />
+      )}
+
+      {optimizeResult && sessionId && (
+        <InvoicePanel
+          result={optimizeResult}
+          onClose={() => setOptimizeResult(null)}
+          showCommission
+          sesionId={sessionId}
+          confirmLoading={confirmingOrders}
+          onConfirmOrders={async () => {
+            setConfirmingOrders(true);
+            try {
+              for (const inv of optimizeResult.invoices) {
+                for (const line of inv.lines) {
+                  const res = await fetch('/api/ordenes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      sesion_id: sessionId,
+                      proveedor_nombre: inv.vendorName,
+                      proveedor_display: inv.vendorName,
+                      descripcion_producto: line.materialName,
+                      cantidad: `${line.quantity} ${line.unit}`,
+                      precio_estimado: line.unitPrice,
+                      moneda: inv.moneda ?? 'GTQ',
+                    }),
+                  });
+                  if (!res.ok) throw new Error('Error al crear orden');
+                }
+              }
+            } finally {
+              setConfirmingOrders(false);
+            }
+          }}
         />
       )}
 
@@ -504,7 +600,7 @@ export default function ResultadosChat({
                 placeholder="Ej: ¿Cuál recomiendas si necesito entrega hoy? ¿El precio incluye IVA?"
                 rows={2}
                 disabled={loading}
-                className="flex-1 px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 transition-colors"
+                className="flex-1 px-4 py-3 text-sm text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 bg-white transition-colors"
               />
               <button onClick={() => handleSend()} disabled={!input.trim() || loading} className="p-3 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0" aria-label="Enviar mensaje">
                 <Send className="w-4 h-4" />

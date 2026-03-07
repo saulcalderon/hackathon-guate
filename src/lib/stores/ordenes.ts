@@ -1,10 +1,6 @@
+import * as ordenesDb from '@/lib/db/ordenes';
 import type { OrdenCompra, OrdenCreateRequest, OrdenPatchRequest } from '@/types/ordenes';
 import { COMISION_FINDRAI_PCT } from '@/lib/constants/planes';
-
-/**
- * In-memory singleton store for ordenes_compra.
- * Same pattern as lib/store/sesiones.ts — persists while the server process runs.
- */
 
 const globalStore = globalThis as typeof globalThis & {
   __ordenesStore?: Map<string, OrdenCompra>;
@@ -16,17 +12,17 @@ if (!globalStore.__ordenesStore) {
 
 export const ordenesStore: Map<string, OrdenCompra> = globalStore.__ordenesStore;
 
-export function getAllOrdenes(): OrdenCompra[] {
+function getAllOrdenesMemory(): OrdenCompra[] {
   return Array.from(ordenesStore.values()).sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 }
 
-export function getOrden(id: string): OrdenCompra | undefined {
+function getOrdenMemory(id: string): OrdenCompra | undefined {
   return ordenesStore.get(id);
 }
 
-export function createOrden(data: OrdenCreateRequest): OrdenCompra {
+function createOrdenMemory(data: OrdenCreateRequest): OrdenCompra {
   const now = new Date().toISOString();
   const comision = COMISION_FINDRAI_PCT;
   const total = parseFloat(
@@ -54,7 +50,7 @@ export function createOrden(data: OrdenCreateRequest): OrdenCompra {
   return orden;
 }
 
-export function patchOrden(id: string, patch: OrdenPatchRequest): OrdenCompra | null {
+function patchOrdenMemory(id: string, patch: OrdenPatchRequest): OrdenCompra | null {
   const orden = ordenesStore.get(id);
   if (!orden) return null;
 
@@ -67,4 +63,52 @@ export function patchOrden(id: string, patch: OrdenPatchRequest): OrdenCompra | 
 
   ordenesStore.set(id, updated);
   return updated;
+}
+
+function isPrismaConfigured(): boolean {
+  return Boolean(process.env.DATABASE_URL);
+}
+
+export async function getAllOrdenes(): Promise<OrdenCompra[]> {
+  if (isPrismaConfigured()) {
+    try {
+      return await ordenesDb.dbGetAllOrdenes();
+    } catch {
+      return getAllOrdenesMemory();
+    }
+  }
+  return getAllOrdenesMemory();
+}
+
+export async function getOrden(id: string): Promise<OrdenCompra | undefined> {
+  if (isPrismaConfigured()) {
+    try {
+      return await ordenesDb.dbGetOrden(id);
+    } catch {
+      return getOrdenMemory(id);
+    }
+  }
+  return getOrdenMemory(id);
+}
+
+export async function createOrden(data: OrdenCreateRequest): Promise<OrdenCompra> {
+  if (isPrismaConfigured()) {
+    try {
+      return await ordenesDb.dbCreateOrden(data);
+    } catch {
+      return createOrdenMemory(data);
+    }
+  }
+  return createOrdenMemory(data);
+}
+
+export async function patchOrden(id: string, patch: OrdenPatchRequest): Promise<OrdenCompra | null> {
+  if (isPrismaConfigured()) {
+    try {
+      return await ordenesDb.dbPatchOrden(id, patch);
+    } catch {
+      return patchOrdenMemory(id, patch);
+    }
+  }
+  return patchOrdenMemory(id, patch);
 }

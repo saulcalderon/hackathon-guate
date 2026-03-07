@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────
-// Planes de créditos y comisión de Findrai
+// Planes de créditos y comisión de Findr.ai
 // ────────────────────────────────────────────────────────────
 
 export const COMISION_FINDRAI_PCT = 8;

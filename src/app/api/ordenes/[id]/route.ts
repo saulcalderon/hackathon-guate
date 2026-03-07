@@ -15,7 +15,7 @@ export async function GET(
   { params }: RouteContext
 ): Promise<NextResponse<OrdenCompra | ApiError>> {
   const { id } = await params;
-  const orden = getOrden(id);
+  const orden = await getOrden(id);
 
   if (!orden) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
@@ -41,7 +41,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const updated = patchOrden(id, body);
+  const updated = await patchOrden(id, body);
 
   if (!updated) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
