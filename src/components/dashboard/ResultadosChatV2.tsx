@@ -93,40 +93,41 @@ function ProveedorResultCard({
         isSelected ? 'ring-2 ring-findrai-primary border-findrai-primary' : 'border-slate-200'
       }`}
     >
-      <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-findrai-primary/10 text-findrai-primary font-bold text-sm flex items-center justify-center shrink-0">
-            {rank}
+      <div className="p-4 border-b border-slate-100">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-findrai-primary/10 text-findrai-primary font-bold text-sm flex items-center justify-center shrink-0">
+              {rank}
+            </div>
+            <p className="font-bold text-slate-900">{r.nombre}</p>
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-bold text-slate-900 text-sm leading-tight">{r.nombre}</p>
-              {r.material_descripcion && (
-                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
-                  {r.material_descripcion}
-                </span>
-              )}
-              {isMejorPrecio && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                  Mejor precio
+          <div className="text-right shrink-0">
+            <div className="flex items-baseline gap-1.5 justify-end">
+              <span className="text-xl font-bold text-findrai-primary">
+                {sym} {r.precio.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+              </span>
+              {(r.cantidad ?? 1) > 1 && (
+                <span className="text-sm text-slate-500">
+                  × {r.cantidad} {r.unidad ?? 'unidad'} = {sym}{((r.precio * (r.cantidad ?? 1))).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                 </span>
               )}
             </div>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mt-1 ${disp.className}`}>
-              {disp.label}
-            </span>
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <p className="text-xl font-bold text-findrai-primary">
-            {sym} {r.precio.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-            {(r.cantidad ?? 1) > 1 && (
-              <span className="ml-1 text-sm font-normal text-slate-500">
-                × {r.cantidad} {r.unidad ?? 'unidad'} = {sym}{((r.precio * (r.cantidad ?? 1))).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-              </span>
-            )}
-          </p>
-          <p className="text-xs text-slate-400">{r.moneda}</p>
+        <div className="flex flex-wrap items-center gap-2 mt-3 ml-11">
+          {r.material_descripcion && (
+            <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+              {r.material_descripcion}
+            </span>
+          )}
+          {isMejorPrecio && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+              Mejor precio
+            </span>
+          )}
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${disp.className}`}>
+            {disp.label}
+          </span>
         </div>
       </div>
 
