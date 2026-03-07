@@ -16,13 +16,17 @@
     "@prisma/client": "^6.19.2",
     "@supabase/supabase-js": "^2.98.0",
     "ai": "^6.0.116",
+    "clsx": "^2.1.1",
+    "gsap": "^3.14.2",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
+    "next-intl": "^4.8.3",
     "pdf-parse": "^2.4.5",
     "prisma": "^6.19.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.9.3",
+    "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

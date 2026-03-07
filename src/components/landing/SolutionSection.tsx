@@ -1,26 +1,28 @@
 import { Upload, Cpu, ArrowRightLeft, CheckCircle2, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function SolutionSection() {
+  const t = useTranslations("Solution");
   const steps = [
     {
       icon: <Upload className="w-6 h-6" />,
-      title: "Upload Invoices",
-      description: "Simply drag and drop your PDFs.",
+      title: t("step1Title"),
+      description: t("step1Desc"),
     },
     {
       icon: <Cpu className="w-6 h-6" />,
-      title: "AI Extraction",
-      description: "Instantly parse lines and prices.",
+      title: t("step2Title"),
+      description: t("step2Desc"),
     },
     {
       icon: <ArrowRightLeft className="w-6 h-6" />,
-      title: "Compare Suppliers",
-      description: "Match same items across vendors.",
+      title: t("step3Title"),
+      description: t("step3Desc"),
     },
     {
       icon: <CheckCircle2 className="w-6 h-6" />,
-      title: "Find Best Option",
-      description: "Select most cost-effective items.",
+      title: t("step4Title"),
+      description: t("step4Desc"),
     },
   ];
 
@@ -29,13 +31,13 @@ export default function SolutionSection() {
       <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-findrai-medium/10 text-findrai-secondary text-sm font-semibold mb-6 border border-findrai-medium/20">
-            The Solution
+            {t("badge")}
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
-            How Findrai Works
+            {t("title")}
           </h2>
           <p className="text-lg text-slate-600">
-            A seamless workflow from upload to savings. Let AI do the heavy lifting so you can focus on making strategic procurement decisions.
+            {t("desc")}
           </p>
         </div>
 
