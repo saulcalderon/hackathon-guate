@@ -43,6 +43,13 @@
   --color-trace-muted: var(--trace-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Findrai Custom Palette */
+  --color-findrai-primary: #024873;
+  --color-findrai-secondary: #03658c;
+  --color-findrai-medium: #4e9fbf;
+  --color-findrai-light: #91c4d9;
+  --color-findrai-accent: #d9b589;
 }
 
 @media (prefers-color-scheme: dark) {
