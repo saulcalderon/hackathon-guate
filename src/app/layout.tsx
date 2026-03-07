@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hackathon Guate",
-  description: "Hackathon Guate",
+  title: "Finr.ai — Intelligent Quote Analyzer",
+  description:
+    "Transform unstructured procurement quotes into normalized, tax-compliant comparisons with AI.",
 };
 
 export default function RootLayout({
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
