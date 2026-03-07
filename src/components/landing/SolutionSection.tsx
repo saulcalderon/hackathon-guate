@@ -27,7 +27,7 @@ export default function SolutionSection() {
   ];
 
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section id="usecases" className="py-24 bg-slate-50 relative overflow-hidden">
       <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-findrai-medium/10 text-findrai-secondary text-sm font-semibold mb-6 border border-findrai-medium/20">

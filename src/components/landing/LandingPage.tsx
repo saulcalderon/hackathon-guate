@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import Hero from '@/components/landing/Hero';
 import ProblemSection from '@/components/landing/ProblemSection';
 import SolutionSection from '@/components/landing/SolutionSection';
@@ -78,10 +78,10 @@ export default function LandingPage() {
             </div>
           </div>
         ) : null}
+        <ProductPreview />
         <ProblemSection />
         <SolutionSection />
         <FeaturesSection />
-        <ProductPreview />
         <CtaSection
           isAuthenticated={Boolean(session)}
           isLoadingSession={loading}

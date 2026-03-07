@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -45,8 +46,14 @@ export default function Sidebar() {
       {/* Sidebar Header / Logo */}
       <div className="h-16 flex items-center px-6 border-b border-slate-800">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-findrai-primary to-findrai-medium flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg leading-none">F</span>
+          <div className="w-8 h-8 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
+            <Image 
+              src="/logo/Finrai.svg" 
+              alt="Finrai Logo" 
+              width={28} 
+              height={28} 
+              className="w-full h-full object-contain brightness-0 invert" 
+            />
           </div>
           <span className="text-xl font-bold tracking-tight">Findrai</span>
         </Link>

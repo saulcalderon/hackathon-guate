@@ -14,7 +14,7 @@ export default function CtaSection({
 }: CtaSectionProps = {}) {
   const t = useTranslations("Cta");
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section id="resources" className="py-24 relative overflow-hidden">
       {/* Background Gradient matching palette */}
       <div className="absolute inset-0 bg-gradient-to-br from-findrai-primary via-findrai-secondary to-findrai-medium z-0"></div>
       

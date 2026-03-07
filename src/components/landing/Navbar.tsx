@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import clsx from "clsx";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -101,17 +101,28 @@ export default function Navbar({
         {/* Right: Auth / CTA Buttons & Language */}
         <div className="flex items-center gap-3 lg:gap-4 z-10">
           <LanguageSwitcher scrolled={scrolled} />
-          <button
-            onClick={isAuthenticated ? undefined : onLogin}
-            className={cn(
-              "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap",
-              scrolled
-                ? "bg-white text-black hover:bg-slate-100"
-                : "bg-slate-900 text-white hover:bg-slate-800"
-            )}
-          >
-            {isAuthenticated ? "Dashboard" : t("login")}
-          </button>
+          {isAuthenticated ? (
+            <Link
+              href="/dashboard"
+              className={cn(
+                "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap bg-white text-black hover:bg-slate-100 flex items-center justify-center"
+              )}
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <button
+              onClick={onLogin}
+              className={cn(
+                "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap",
+                scrolled
+                  ? "bg-white text-black hover:bg-slate-100"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              )}
+            >
+              {t("login")}
+            </button>
+          )}
           
           {isAuthenticated && (
             <button

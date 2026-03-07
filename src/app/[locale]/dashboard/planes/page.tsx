@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Zap, Check, MessageCircle, Mail, Star } from 'lucide-react';
 import { PLANES_CREDITOS, COMISION_FINDRAI_PCT, CONTACTO_WHATSAPP, CONTACTO_EMAIL } from '@/lib/constants/planes';
 
@@ -13,16 +14,16 @@ export default function PlanesPage() {
         </div>
         <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Planes y precios</h1>
         <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
-          Cada consulta con scraping real usa 1 crédito. Elige el paquete que mejor se adapte a tu empresa.
+          Cada consulta con scraping real usa 1 crédito (desde Q2). Elige el paquete que mejor se adapte a tu empresa.
         </p>
       </div>
 
       {/* What is a credit */}
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 grid sm:grid-cols-3 gap-4 text-center">
         {[
-          { icon: '🔍', title: '1 crédito', desc: '= 1 búsqueda de proveedores con precios reales' },
+          { icon: '🔍', title: '1 crédito = Q2', desc: 'Promedio por búsqueda de proveedores con precios reales' },
           { icon: '🔒', title: 'Sin créditos', desc: 'Puedes ver el análisis IA pero los nombres quedan ocultos' },
-          { icon: '🛒', title: 'Comprar con Findrai', desc: 'La gestión de compra es aparte — comisión del ' + COMISION_FINDRAI_PCT + '%' },
+          { icon: '🤝', title: 'Compras Gestionadas', desc: 'Nosotros compramos por ti con una tarifa del ' + COMISION_FINDRAI_PCT + '%' },
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-2">
             <span className="text-2xl">{item.icon}</span>
@@ -102,8 +103,14 @@ export default function PlanesPage() {
                     : 'bg-slate-900 hover:bg-slate-800 text-white'
                 }`}
               >
-                <MessageCircle className="w-4 h-4" />
-                Comprar por WhatsApp
+                <Image 
+                  src="/logo/vudy.png" 
+                  alt="Vudy" 
+                  width={20} 
+                  height={20} 
+                  className="rounded-full brightness-0 invert"
+                />
+                Comprar con Vudy
               </a>
             </div>
           </div>
@@ -123,10 +130,16 @@ export default function PlanesPage() {
             href={CONTACTO_WHATSAPP}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl transition-colors"
           >
-            <MessageCircle className="w-4 h-4" />
-            WhatsApp
+            <Image 
+              src="/logo/vudy.png" 
+              alt="Vudy" 
+              width={18} 
+              height={18} 
+              className="rounded-full brightness-0 invert"
+            />
+            Comprar con Vudy
           </a>
           <a
             href={`mailto:${CONTACTO_EMAIL}`}

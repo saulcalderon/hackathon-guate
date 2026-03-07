@@ -2,34 +2,34 @@
 // Planes de créditos y comisión de Findrai
 // ────────────────────────────────────────────────────────────
 
-export const COMISION_FINDRAI_PCT = 8;
+export const COMISION_FINDRAI_PCT = 1.5;
 
 export const PLANES_CREDITOS = [
   {
     id: 'starter',
     nombre: 'Starter',
     descripcion: 'Ideal para probar el servicio',
-    creditos: 5,
+    creditos: 25,
     precio_gtq: 50,
-    precio_usd: 6,
+    precio_usd: 6.5,
     popular: false,
   },
   {
     id: 'pro',
     nombre: 'Pro',
     descripcion: 'Para equipos de compras activos',
-    creditos: 20,
-    precio_gtq: 175,
-    precio_usd: 22,
+    creditos: 100,
+    precio_gtq: 180,
+    precio_usd: 23,
     popular: true,
   },
   {
     id: 'business',
     nombre: 'Business',
     descripcion: 'Para empresas con alto volumen',
-    creditos: 100,
-    precio_gtq: 700,
-    precio_usd: 88,
+    creditos: 500,
+    precio_gtq: 800,
+    precio_usd: 102,
     popular: false,
   },
 ] as const;
