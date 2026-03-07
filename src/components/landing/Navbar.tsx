@@ -75,7 +75,7 @@ export default function Navbar({
                 scrolled ? "max-w-0 opacity-0 pointer-events-none" : "max-w-[150px] opacity-100 text-slate-900 ml-2"
               )}
             >
-              Findrai
+              Findr.ai
             </span>
           </Link>
         </div>
