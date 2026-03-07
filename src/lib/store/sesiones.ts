@@ -54,15 +54,19 @@ function patchSesionMemory(id: string, patch: SesionPatchRequest): SesionSolicit
   return updated;
 }
 
-function isPrismaConfigured(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+/**
+ * Checks if Supabase is properly configured.
+ */
+function isSupabaseConfigured(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
 export async function getAllSesiones(): Promise<SesionSolicitud[]> {
-  if (isPrismaConfigured()) {
+  if (isSupabaseConfigured()) {
     try {
       return await sesionesDb.dbGetAllSesiones();
-    } catch {
+    } catch (error) {
+      console.error('Error fetching all sesiones from DB:', error);
       return getAllSesionesMemory();
     }
   }
@@ -70,10 +74,14 @@ export async function getAllSesiones(): Promise<SesionSolicitud[]> {
 }
 
 export async function getSesion(id: string): Promise<SesionSolicitud | undefined> {
-  if (isPrismaConfigured()) {
+  if (isSupabaseConfigured()) {
     try {
-      return await sesionesDb.dbGetSesion(id);
-    } catch {
+      const dbResult = await sesionesDb.dbGetSesion(id);
+      if (dbResult) return dbResult;
+      // Fallback to memory if not found in DB (could be a residual in-memory session)
+      return getSesionMemory(id);
+    } catch (error) {
+      console.error(`Error fetching sesion ${id} from DB:`, error);
       return getSesionMemory(id);
     }
   }
@@ -83,10 +91,11 @@ export async function getSesion(id: string): Promise<SesionSolicitud | undefined
 export async function createSesion(
   data: Omit<SesionSolicitud, 'id' | 'estado' | 'mensajes' | 'proveedor_elegido' | 'created_at' | 'updated_at'>
 ): Promise<SesionSolicitud> {
-  if (isPrismaConfigured()) {
+  if (isSupabaseConfigured()) {
     try {
       return await sesionesDb.dbCreateSesion(data);
-    } catch {
+    } catch (error) {
+      console.error('Error creating sesion in DB:', error);
       return createSesionMemory(data);
     }
   }
@@ -94,10 +103,13 @@ export async function createSesion(
 }
 
 export async function patchSesion(id: string, patch: SesionPatchRequest): Promise<SesionSolicitud | null> {
-  if (isPrismaConfigured()) {
+  if (isSupabaseConfigured()) {
     try {
-      return await sesionesDb.dbPatchSesion(id, patch);
-    } catch {
+      const dbResult = await sesionesDb.dbPatchSesion(id, patch);
+      if (dbResult) return dbResult;
+      return patchSesionMemory(id, patch);
+    } catch (error) {
+      console.error(`Error patching sesion ${id} in DB:`, error);
       return patchSesionMemory(id, patch);
     }
   }

@@ -32,6 +32,10 @@ export function createAdminSupabaseClient() {
     );
   }
 
+  if (key.includes('YOUR_SERVICE_ROLE_KEY_HERE')) {
+    console.warn('[Supabase] WARNING: You are using a placeholder for SUPABASE_SERVICE_ROLE_KEY. Operations will likely fail.');
+  }
+
   return createClient(url, key, {
     auth: {
       autoRefreshToken: false,

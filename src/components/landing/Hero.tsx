@@ -1,25 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ArrowRight, Play, Globe, Cpu, SplitSquareHorizontal, CheckCircle, LogOut } from "lucide-react";
+import { ArrowRight, Play, Globe, Cpu, SplitSquareHorizontal, CheckCircle } from "lucide-react";
 import gsap from "gsap";
 import { useTranslations } from "next-intl";
+import { Show, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
-type HeroProps = {
-  isAuthenticated?: boolean;
-  isLoadingSession?: boolean;
-  userEmail?: string | null;
-  onPrimaryAction?: () => void;
-  onLogout?: () => void;
-};
-
-export default function Hero({
-  isAuthenticated = false,
-  isLoadingSession = false,
-  userEmail = null,
-  onPrimaryAction,
-  onLogout,
-}: HeroProps = {}) {
+export default function Hero() {
   const t = useTranslations("Hero");
   const containerRef = useRef<HTMLDivElement>(null);
   const step1Ref = useRef<HTMLDivElement>(null);
@@ -93,6 +81,23 @@ export default function Hero({
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto mt-4">
+              <Show when="signed-in">
+                <Link 
+                  href="/dashboard"
+                  className="w-full sm:w-auto px-10 py-4 rounded-xl bg-slate-900 text-white font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 group"
+                >
+                  Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Show>
+
+              <Show when="signed-out">
+                <SignInButton mode="modal">
+                  <button className="w-full sm:w-auto px-10 py-4 rounded-xl bg-slate-900 text-white font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2 group">
+                    {t("startBtn")} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </SignInButton>
+              </Show>
+
               <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 hover:text-findrai-primary font-semibold text-lg transition-all border border-slate-200 hover:border-findrai-light hover:bg-slate-50 hover:shadow-sm flex items-center justify-center gap-2 group">
                 <Play className="w-5 h-5 text-slate-400 group-hover:text-findrai-primary transition-colors" />{" "}
                 {t("seeHowItWorks")}

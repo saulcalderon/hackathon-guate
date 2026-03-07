@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ChatMessage, SolicitudInput } from '@/types/solicitudes';
 
-const MODEL = 'gemini-1.5-flash';
+const MODEL = 'gemini-1.5-flash-latest';
 
 const SYSTEM_INSTRUCTION = `Eres un asistente de compras corporativas para empresas centroamericanas (Guatemala, El Salvador, Honduras).
 

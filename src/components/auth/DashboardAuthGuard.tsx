@@ -3,19 +3,17 @@
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useAuth } from '@clerk/nextjs';
 
 export default function DashboardAuthGuard({ children }: { children: ReactNode }) {
-  const { session, loading, isConfigured } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    if (!isLoaded) return;
 
-    if (!isConfigured) return;
-
-    if (!session) {
+    if (!isSignedIn) {
       const params = new URLSearchParams({ login: '1' });
       if (pathname) {
         params.set('next', pathname);
@@ -23,24 +21,9 @@ export default function DashboardAuthGuard({ children }: { children: ReactNode }
 
       router.replace(`/?${params.toString()}`);
     }
-  }, [isConfigured, loading, pathname, router, session]);
+  }, [isLoaded, isSignedIn, pathname, router]);
 
-  if (!isConfigured) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-        <div className="max-w-lg rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-amber-900 shadow-sm">
-          <h1 className="text-xl font-semibold">Falta configurar Supabase</h1>
-          <p className="mt-2 text-sm text-amber-800">
-            Define `NEXT_PUBLIC_SUPABASE_URL` y
-            `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` para habilitar el acceso al
-            dashboard.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
+  if (!isLoaded) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-sm font-medium text-slate-600 shadow-sm">
@@ -50,7 +33,7 @@ export default function DashboardAuthGuard({ children }: { children: ReactNode }
     );
   }
 
-  if (!session) {
+  if (!isSignedIn) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
         <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">

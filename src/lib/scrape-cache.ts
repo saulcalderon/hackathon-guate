@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import {
   scrapeVendor,
   SUPPORTED_VENDORS,
@@ -12,18 +12,20 @@ export async function getCachedScrape(
   vendor: string,
 ): Promise<VendorScrapeResult | null> {
   const key = CACHE_KEY_NORMALIZE(searchTerm);
-  const row = await prisma.scrapeCache.findUnique({
-    where: {
-      searchTerm_vendor: { searchTerm: key, vendor },
-    },
-  });
-  if (!row) return null;
+  const supabase = createAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from('scrape_cache')
+    .select('*')
+    .eq('search_term', key)
+    .eq('vendor', vendor)
+    .single();
 
-  const products = row.products as unknown as ScrapedProduct[];
+  if (error || !data) return null;
+
   return {
-    vendor: row.vendor,
-    products,
-    searchUrl: row.searchUrl,
+    vendor: data.vendor,
+    products: data.products as unknown as ScrapedProduct[],
+    searchUrl: data.search_url,
   };
 }
 
@@ -32,21 +34,20 @@ export async function saveScrapeCache(
   result: VendorScrapeResult,
 ): Promise<void> {
   const key = CACHE_KEY_NORMALIZE(searchTerm);
-  await prisma.scrapeCache.upsert({
-    where: {
-      searchTerm_vendor: { searchTerm: key, vendor: result.vendor },
-    },
-    create: {
-      searchTerm: key,
+  const supabase = createAdminSupabaseClient();
+  
+  const { error } = await supabase
+    .from('scrape_cache')
+    .upsert({
+      search_term: key,
       vendor: result.vendor,
-      searchUrl: result.searchUrl,
-      products: result.products as object[],
-    },
-    update: {
-      searchUrl: result.searchUrl,
-      products: result.products as object[],
-    },
-  });
+      search_url: result.searchUrl,
+      products: result.products,
+    }, {
+      onConflict: 'search_term,vendor'
+    });
+
+  if (error) console.error('Error saving scrape cache:', error);
 }
 
 export async function scrapeAllVendorsWithCache(

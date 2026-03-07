@@ -1,12 +1,11 @@
  'use client';
 
 import { Bell, Search } from 'lucide-react';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { UserButton, useUser } from '@clerk/nextjs';
 
 export default function Header() {
-  const { session } = useAuth();
-  const email = session?.user.email ?? 'Usuario autenticado';
-  const initials = email.slice(0, 2).toUpperCase();
+  const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress ?? 'Usuario autenticado';
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30">
@@ -32,7 +31,7 @@ export default function Header() {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
         </button>
 
-        {/* User Profile (Single User Mode) */}
+        {/* User Profile (Clerk UserButton) */}
         <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
           <div className="hidden md:flex flex-col items-end">
             <span className="text-sm font-bold text-slate-800 leading-tight">
@@ -40,9 +39,7 @@ export default function Header() {
             </span>
             <span className="text-xs text-slate-500 font-medium">Cuenta activa</span>
           </div>
-          <div className="w-9 h-9 rounded-full bg-findrai-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">
-            {initials}
-          </div>
+          <UserButton />
         </div>
       </div>
     </header>

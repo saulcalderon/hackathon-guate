@@ -4,7 +4,7 @@ import { z } from "zod";
 import { AGENT_PROMPT } from "@/lib/prompts";
 import { scrapeVendor, SUPPORTED_VENDORS } from "@/lib/tools/scrape-vendor";
 import { emailVendor } from "@/lib/tools/email-vendor";
-import { prisma } from "@/lib/db";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { StreamEvent } from "@/lib/schemas";
 
 function encode(event: StreamEvent): Uint8Array {
@@ -129,27 +129,35 @@ Busca precios en cada vendedor público. Si un material no se encuentra en líne
                 }));
 
                 if (projectId) {
+                  const supabase = createAdminSupabaseClient();
                   for (const quote of params.quotes) {
-                    const material = await prisma.material.findFirst({
-                      where: {
-                        projectId,
-                        name: { contains: quote.materialName, mode: "insensitive" },
-                      },
-                    });
+                    const { data: materials, error: mError } = await supabase
+                      .from('materials')
+                      .select('id')
+                      .eq('project_id', projectId)
+                      .ilike('name', `%${quote.materialName}%`);
 
-                    if (material) {
-                      await prisma.vendorQuote.create({
-                        data: {
-                          vendorName: quote.vendorName,
-                          materialId: material.id,
-                          unitPrice: quote.unitPrice,
-                          totalPrice: quote.totalWithIVA,
+                    if (mError) {
+                      console.error('Error finding material:', mError);
+                      continue;
+                    }
+
+                    if (materials && materials.length > 0) {
+                      const materialId = materials[0].id;
+                      const { error: qError } = await supabase
+                        .from('vendor_quotes')
+                        .insert({
+                          vendor_name: quote.vendorName,
+                          material_id: materialId,
+                          unit_price: quote.unitPrice,
+                          total_price: quote.totalWithIVA,
                           source: quote.source,
                           status: quote.status,
                           brand: quote.brand,
-                          deliveryTime: quote.deliveryTime,
-                        },
-                      });
+                          delivery_time: quote.deliveryTime,
+                        });
+                      
+                      if (qError) console.error('Error saving quote:', qError);
                     }
                   }
                 }
@@ -173,10 +181,11 @@ Busca precios en cada vendedor público. Si un material no se encuentra en líne
         console.log(`[analyze] Stream done. ${chunkCount} text chunks, ${fullText.length} total chars`);
 
         if (projectId) {
-          await prisma.project.update({
-            where: { id: projectId },
-            data: { status: "analyzed" },
-          });
+          const supabase = createAdminSupabaseClient();
+          await supabase
+            .from('projects')
+            .update({ status: "analyzed" })
+            .eq('id', projectId);
         }
 
         controller.enqueue(encode({

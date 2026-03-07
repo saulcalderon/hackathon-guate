@@ -2,7 +2,8 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { materialListSchema } from "@/lib/schemas";
 import { INGEST_PROMPT } from "@/lib/prompts";
-import { prisma } from "@/lib/db";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { auth } from "@clerk/nextjs/server";
 
 async function extractPdfText(base64: string): Promise<string> {
   try {
@@ -19,6 +20,11 @@ async function extractPdfText(base64: string): Promise<string> {
 
 export async function POST(req: Request) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { text, pdfBase64 } = body as { text?: string; pdfBase64?: string };
 
@@ -43,25 +49,38 @@ export async function POST(req: Request) {
       prompt: inputText,
     });
 
-    const project = await prisma.project.create({
-      data: {
+    const supabase = createAdminSupabaseClient();
+    
+    // 1. Create project
+    const { data: project, error: pError } = await supabase
+      .from('projects')
+      .insert({
         name: object.projectName,
         status: "draft",
-        materials: {
-          create: object.materials.map((m) => ({
-            name: m.name,
-            quantity: m.quantity,
-            unit: m.unit,
-          })),
-        },
-      },
-      include: { materials: true },
-    });
+        user_id: userId
+      })
+      .select()
+      .single();
+
+    if (pError) throw pError;
+
+    // 2. Create materials
+    const { data: materials, error: mError } = await supabase
+      .from('materials')
+      .insert(object.materials.map((m) => ({
+        name: m.name,
+        quantity: m.quantity,
+        unit: m.unit,
+        project_id: project.id
+      })))
+      .select();
+
+    if (mError) throw mError;
 
     return Response.json({
       projectId: project.id,
       projectName: project.name,
-      materials: project.materials.map((m) => ({
+      materials: materials.map((m) => ({
         id: m.id,
         name: m.name,
         quantity: m.quantity,

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { AnalysisResult } from '@/types/cotizaciones';
 
-const MODEL = 'gemini-1.5-flash';
+const MODEL = 'gemini-1.5-flash-latest';
 
 const SYSTEM_PROMPT = `Eres un asistente especializado en análisis de cotizaciones comerciales.
 Tu tarea es extraer información estructurada del texto OCR de una cotización y devolverla ÚNICAMENTE como JSON válido, sin texto adicional, sin markdown, sin bloques de código.

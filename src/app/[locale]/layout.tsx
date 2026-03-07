@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { AuthProvider } from "@/components/auth/AuthProvider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,11 +44,11 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider messages={messages}>
-          <AuthProvider>
+        <ClerkProvider>
+          <NextIntlClientProvider messages={messages}>
             {children}
-          </AuthProvider>
-        </NextIntlClientProvider>
+          </NextIntlClientProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

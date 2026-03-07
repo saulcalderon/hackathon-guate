@@ -7,32 +7,22 @@ import clsx from "clsx";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { twMerge } from "tailwind-merge";
 import { useTranslations } from "next-intl";
-import { LogOut } from "lucide-react";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-export default function Navbar({ 
-  onLogin, 
-  isAuthenticated = false,
-  onLogout 
-}: { 
-  onLogin?: () => void;
-  isAuthenticated?: boolean;
-  onLogout?: () => void;
-}) {
+export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const t = useTranslations("Navbar");
 
   useEffect(() => {
     const handleScroll = () => {
-      // Trigger the pill effect when scrolling down past 50px
       setScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
-    // Set initial state
     handleScroll();
 
     return () => window.removeEventListener("scroll", handleScroll);
@@ -68,7 +58,6 @@ export default function Navbar({
                 )} 
               />
             </div>
-            {/* Hide the brand name when scrolled to save space in the pill */}
             <span
               className={cn(
                 "font-bold text-xl tracking-tight transition-all duration-500 overflow-hidden whitespace-nowrap",
@@ -101,7 +90,8 @@ export default function Navbar({
         {/* Right: Auth / CTA Buttons & Language */}
         <div className="flex items-center gap-3 lg:gap-4 z-10">
           <LanguageSwitcher scrolled={scrolled} />
-          {isAuthenticated ? (
+          
+          <Show when="signed-in">
             <Link
               href="/dashboard"
               className={cn(
@@ -110,32 +100,23 @@ export default function Navbar({
             >
               Dashboard
             </Link>
-          ) : (
-            <button
-              onClick={onLogin}
-              className={cn(
-                "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap",
-                scrolled
-                  ? "bg-white text-black hover:bg-slate-100"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              )}
-            >
-              {t("login")}
-            </button>
-          )}
-          
-          {isAuthenticated && (
-            <button
-              onClick={onLogout}
-              className={cn(
-                "p-2 rounded-full transition-colors",
-                scrolled ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"
-              )}
-              title="Cerrar Sesión"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          )}
+            <UserButton />
+          </Show>
+
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button
+                className={cn(
+                  "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap",
+                  scrolled
+                    ? "bg-white text-black hover:bg-slate-100"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                )}
+              >
+                {t("login")}
+              </button>
+            </SignInButton>
+          </Show>
         </div>
       </nav>
     </div>

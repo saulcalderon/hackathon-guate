@@ -1,5 +1,5 @@
 import type { OptimizationResult, VendorInvoice, InvoiceLine } from "@/lib/schemas";
-import { prisma } from "@/lib/db";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 const IVA_RATE = 0.12;
 const DELIVERY_FEE_PER_VENDOR = 75;
@@ -19,31 +19,29 @@ export async function optimizeOrder(
   projectId: string,
   bypassPending = false,
 ): Promise<OptimizationResult> {
-  const project = await prisma.project.findUniqueOrThrow({
-    where: { id: projectId },
-    include: {
-      materials: {
-        include: {
-          quotes: true,
-        },
-      },
-    },
-  });
+  const supabase = createAdminSupabaseClient();
+  const { data: project, error } = await supabase
+    .from('projects')
+    .select('*, materials(*, vendor_quotes(*))')
+    .eq('id', projectId)
+    .single();
+
+  if (error || !project) throw new Error("Project not found");
 
   const allQuotes: QuoteWithMaterial[] = [];
 
   for (const material of project.materials) {
-    for (const quote of material.quotes) {
+    for (const quote of material.vendor_quotes) {
       if (bypassPending && quote.status === "pending") continue;
       if (quote.status === "pending") continue;
 
       allQuotes.push({
-        vendorName: quote.vendorName,
+        vendorName: quote.vendor_name,
         materialName: material.name,
         quantity: material.quantity,
         unit: material.unit,
-        unitPrice: quote.unitPrice,
-        totalPrice: quote.totalPrice,
+        unitPrice: Number(quote.unit_price),
+        totalPrice: Number(quote.total_price),
         status: quote.status,
       });
     }

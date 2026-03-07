@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { prisma } from "@/lib/db";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 let resendInstance: Resend | null = null;
 
@@ -44,7 +44,7 @@ function buildRfqHtml(projectName: string, materials: string[]): string {
         <li>Tiempo estimado de entrega</li>
         <li>Condiciones de pago</li>
       </ul>
-      <p>Agradecemos su pronta respuesta.</p>
+      <p>Agradecomendos su pronta respuesta.</p>
       <hr style="border: none; border-top: 1px solid #e2e8f0;" />
       <p style="color: #94a3b8; font-size: 12px;">
         Generado automáticamente por Findr.ai — Agente Digital de Compras
@@ -85,14 +85,20 @@ export async function savePendingQuote(
   materialId: string,
   vendorName: string,
 ) {
-  return prisma.vendorQuote.create({
-    data: {
-      vendorName,
-      materialId,
-      unitPrice: 0,
-      totalPrice: 0,
+  const supabase = createAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from('vendor_quotes')
+    .insert({
+      vendor_name: vendorName,
+      material_id: materialId,
+      unit_price: 0,
+      total_price: 0,
       source: "email",
       status: "pending",
-    },
-  });
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }

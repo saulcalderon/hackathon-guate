@@ -1,17 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Show, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
-type CtaSectionProps = {
-  isAuthenticated?: boolean;
-  isLoadingSession?: boolean;
-  onPrimaryAction?: () => void;
-};
-
-export default function CtaSection({
-  isAuthenticated = false,
-  isLoadingSession = false,
-  onPrimaryAction,
-}: CtaSectionProps = {}) {
+export default function CtaSection() {
   const t = useTranslations("Cta");
   return (
     <section id="resources" className="py-24 relative overflow-hidden">
@@ -33,14 +25,26 @@ export default function CtaSection({
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={onPrimaryAction}
-            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-accent hover:bg-white text-findrai-primary font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
-          >
-            {isAuthenticated ? 'Go to dashboard' : isLoadingSession ? 'Validando...' : 'Start using Findr.ai'}{' '}
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <Show when="signed-in">
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-accent hover:bg-white text-findrai-primary font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            >
+              Go to dashboard <ArrowRight className="w-5 h-5" />
+            </Link>
+          </Show>
+
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-findrai-accent hover:bg-white text-findrai-primary font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                Start using Findr.ai <ArrowRight className="w-5 h-5" />
+              </button>
+            </SignInButton>
+          </Show>
+
           <button
             type="button"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-lg transition-all border border-white/20 backdrop-blur-sm flex items-center justify-center gap-2 text-center"

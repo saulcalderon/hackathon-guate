@@ -5,12 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useClerk } from '@clerk/nextjs';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut } = useClerk();
   const [errorMessage, setErrorMessage] = useState('');
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -29,16 +29,12 @@ export default function Sidebar() {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
-    const { error } = await signOut();
-    setIsSigningOut(false);
-
-    if (error) {
-      setErrorMessage(error);
-      return;
+    try {
+      await signOut({ redirectUrl: '/?login=1' });
+    } catch (error) {
+      setErrorMessage('Error signing out. Please try again.');
+      setIsSigningOut(false);
     }
-
-    setErrorMessage('');
-    router.push('/?login=1');
   };
 
   return (
