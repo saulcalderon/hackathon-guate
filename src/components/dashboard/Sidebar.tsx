@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export default function Sidebar() {
   const pathname = usePathname();
