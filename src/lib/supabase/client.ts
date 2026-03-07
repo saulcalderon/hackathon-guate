@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Browser-side Supabase client (uses publishable/anon key, respects RLS).
@@ -7,11 +7,22 @@ import { createClient } from '@supabase/supabase-js';
  * Supports both the new publishable key format (sb_publishable_...) and
  * the legacy anon JWT key.
  */
-export function createBrowserSupabaseClient() {
+function getSupabaseBrowserConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  return { url, key };
+}
+
+export function isSupabaseConfigured() {
+  const { url, key } = getSupabaseBrowserConfig();
+  return Boolean(url && key);
+}
+
+export function createBrowserSupabaseClient() {
+  const { url, key } = getSupabaseBrowserConfig();
 
   if (!url || !key) {
     throw new Error(
@@ -20,4 +31,14 @@ export function createBrowserSupabaseClient() {
   }
 
   return createClient(url, key);
+}
+
+let browserSupabaseClient: SupabaseClient | null = null;
+
+export function getBrowserSupabaseClient() {
+  if (!browserSupabaseClient) {
+    browserSupabaseClient = createBrowserSupabaseClient();
+  }
+
+  return browserSupabaseClient;
 }
