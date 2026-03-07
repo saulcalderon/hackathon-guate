@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Package, Clock, CheckCircle2, XCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Package, Clock, CheckCircle2, XCircle, Loader2, ArrowLeft, Eye } from 'lucide-react';
 import type { OrdenCompra, EstadoOrden } from '@/types/ordenes';
+import { RequestPreviewModal } from '@/components/dashboard/RequestPreviewModal';
 
 const ESTADO_CONFIG: Record<EstadoOrden, { label: string; className: string; icon: React.ReactNode }> = {
   pendiente: {
@@ -47,6 +48,7 @@ export default function ComprasPage() {
   const [ordenes, setOrdenes] = useState<OrdenCompra[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<EstadoOrden | 'todas'>('todas');
+  const [previewOrden, setPreviewOrden] = useState<OrdenCompra | null>(null);
 
   useEffect(() => {
     fetch('/api/ordenes')
@@ -76,7 +78,7 @@ export default function ComprasPage() {
             Mis Compras
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            Órdenes gestionadas por Findrai — nosotros hacemos la logística.
+            Órdenes gestionadas por Findr.ai — nosotros hacemos la logística.
           </p>
         </div>
         <Link
@@ -115,7 +117,7 @@ export default function ComprasPage() {
           <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-400 text-sm">
             {ordenes.length === 0
-              ? 'Todavía no tienes órdenes. Usa el botón "Comprar con Findrai" en una búsqueda.'
+              ? 'Todavía no tienes órdenes. Usa el botón "Comprar con Findr.ai" en una búsqueda.'
               : 'No hay órdenes con ese filtro.'}
           </p>
         </div>
@@ -166,14 +168,24 @@ export default function ComprasPage() {
                       </td>
                       <td className="p-4 text-slate-400 text-xs whitespace-nowrap">{timeAgo(o.created_at)}</td>
                       <td className="p-4 text-right">
-                        {o.estado === 'pendiente' && (
+                        <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleCancelar(o.id)}
-                            className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors"
+                            type="button"
+                            onClick={() => setPreviewOrden(o)}
+                            className="p-1.5 text-slate-400 hover:text-findrai-primary rounded-lg hover:bg-slate-100 transition-colors"
+                            title="Vista previa (como impreso)"
                           >
-                            Cancelar
+                            <Eye className="w-4 h-4" />
                           </button>
-                        )}
+                          {o.estado === 'pendiente' && (
+                            <button
+                              onClick={() => handleCancelar(o.id)}
+                              className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -188,12 +200,20 @@ export default function ComprasPage() {
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex gap-3">
         <Package className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-blue-800">¿Cómo funciona Comprar con Findrai?</p>
+          <p className="text-sm font-semibold text-blue-800">¿Cómo funciona Comprar con Findr.ai?</p>
           <p className="text-xs text-blue-600 mt-1 leading-relaxed">
             Cuando creas una orden, nuestro equipo se encarga de contactar al proveedor, negociar, gestionar el pago y coordinar la entrega. Cobramos una comisión del {8}% sobre el valor del producto por el servicio completo.
           </p>
         </div>
       </div>
+
+      {previewOrden && (
+        <RequestPreviewModal
+          variant="orden"
+          orden={previewOrden}
+          onClose={() => setPreviewOrden(null)}
+        />
+      )}
     </div>
   );
 }

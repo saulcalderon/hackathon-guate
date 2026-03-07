@@ -155,6 +155,8 @@ export default function SesionPage({ params }: PageProps) {
             sesionEstado={sesion.estado}
             proveedorElegido={sesion.proveedor_elegido}
             onProveedorElegido={handleProveedorElegido}
+            cantidadInicial={sesion.cantidad}
+            unidadInicial={sesion.unidad}
           />
         </div>
       </div>

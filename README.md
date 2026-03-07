@@ -1,4 +1,4 @@
-# Findrai
+# Findr.ai
 
 Plataforma de procurement inteligente para empresas en Centroamérica (Guatemala, El Salvador, Honduras).
 
@@ -8,7 +8,7 @@ Las empresas centroamericanas reciben cotizaciones de proveedores en PDFs con fo
 
 ## La solución
 
-Findrai es un marketplace de RFQ (Request for Quote) con IA integrada:
+Findr.ai es un marketplace de RFQ (Request for Quote) con IA integrada:
 
 1. **El comprador describe lo que necesita** — texto libre, categorías, urgencia y prioridades.
 2. **La plataforma busca y compara proveedores** — precios actuales en el mercado (scraping inteligente) o invitaciones formales a proveedores registrados.

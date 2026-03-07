@@ -57,7 +57,7 @@ export function MaterialInput({ onSubmit, isLoading }: MaterialInputProps) {
         onChange={(e) => setText(e.target.value)}
         placeholder={`Ejemplo:\n50 sacos de Cemento UGC 4000 PSI (Cementos Progreso)\n10 quintales de Hierro corrugado 3/8" grado 40 (SIDEGUA)\n30 láminas de zinc galvanizado 12 pies calibre 26 (Zinc Acanalado)\n20 tubos PVC 4" drenaje (Amanco/Mexichem)\n8 galones de pintura látex blanca (Sherwin-Williams SuperPaint)\n15 bolsas de pegamix para piso (Intaco)\n200 blocks de 15x20x40 cm`}
         rows={8}
-        className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
 
       <div className="mt-3">

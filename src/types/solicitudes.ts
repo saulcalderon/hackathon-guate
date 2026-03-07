@@ -47,6 +47,10 @@ export interface ResultadoProveedor {
   url_referencia: string | null;
   disponibilidad: 'disponible' | 'bajo_stock' | 'sin_stock';
   calificacion: number | null;
+  /** Material this quote belongs to (multi-material sessions) */
+  material_descripcion?: string;
+  cantidad?: number;
+  unidad?: string;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -87,6 +91,8 @@ export interface SesionSolicitud {
   urgencia: Urgencia;
   prioridades: PrioridadClave[];
   presupuesto: string | null;
+  cantidad?: number | null;
+  unidad?: string | null;
   resultados: ResultadoProveedor[];
   mensajes: ChatMessage[];
   proveedor_elegido: string | null;

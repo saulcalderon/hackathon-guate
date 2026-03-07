@@ -46,7 +46,7 @@ export default function Sidebar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-findrai-primary to-findrai-medium flex items-center justify-center shadow-md">
             <span className="text-white font-bold text-lg leading-none">F</span>
           </div>
-          <span className="text-xl font-bold tracking-tight">Findrai</span>
+          <span className="text-xl font-bold tracking-tight">Findr.ai</span>
         </Link>
       </div>
 

@@ -22,7 +22,7 @@ export default function PlanesPage() {
         {[
           { icon: '🔍', title: '1 crédito', desc: '= 1 búsqueda de proveedores con precios reales' },
           { icon: '🔒', title: 'Sin créditos', desc: 'Puedes ver el análisis IA pero los nombres quedan ocultos' },
-          { icon: '🛒', title: 'Comprar con Findrai', desc: 'La gestión de compra es aparte — comisión del ' + COMISION_FINDRAI_PCT + '%' },
+          { icon: '🛒', title: 'Comprar con Findr.ai', desc: 'La gestión de compra es aparte — comisión del ' + COMISION_FINDRAI_PCT + '%' },
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-2">
             <span className="text-2xl">{item.icon}</span>
@@ -141,7 +141,7 @@ export default function PlanesPage() {
       {/* Comision info */}
       <div className="text-center">
         <p className="text-xs text-slate-400">
-          Los créditos no vencen. El servicio &quot;Comprar con Findrai&quot; tiene una comisión del {COMISION_FINDRAI_PCT}% sobre el valor del producto, independiente del plan.
+          Los créditos no vencen. El servicio &quot;Comprar con Findr.ai&quot; tiene una comisión del {COMISION_FINDRAI_PCT}% sobre el valor del producto, independiente del plan.
         </p>
         <Link href="/dashboard" className="text-xs text-findrai-primary hover:underline mt-1 inline-block">
           ← Volver al overview

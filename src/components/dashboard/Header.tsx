@@ -18,7 +18,7 @@ export default function Header() {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:border-findrai-primary focus:ring-1 focus:ring-findrai-primary bg-slate-50 transition-colors"
+            className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-findrai-primary focus:ring-1 focus:ring-findrai-primary bg-slate-50 transition-colors"
             placeholder="Search invoices, suppliers, or items..."
           />
         </div>

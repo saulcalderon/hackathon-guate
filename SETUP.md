@@ -1,4 +1,4 @@
-# Setup del proyecto — Findrai
+# Setup del proyecto — Findr.ai
 
 Guía para que cualquier miembro del equipo pueda levantar el proyecto desde cero.
 
