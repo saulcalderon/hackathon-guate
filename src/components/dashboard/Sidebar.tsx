@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -10,11 +10,9 @@ export default function Sidebar() {
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
     { name: "Solicitudes", href: "/dashboard/solicitudes", icon: <Search className="w-5 h-5" /> },
+    { name: "Cotizaciones", href: "/dashboard/cotizaciones", icon: <FileText className="w-5 h-5" /> },
     { name: "Mis Compras", href: "/dashboard/compras", icon: <ShoppingCart className="w-5 h-5" /> },
     { name: "Planes", href: "/dashboard/planes", icon: <Zap className="w-5 h-5" /> },
-    { name: "Invoices", href: "/dashboard/invoices", icon: <FileText className="w-5 h-5" /> },
-    { name: "Suppliers", href: "/dashboard/suppliers", icon: <Users className="w-5 h-5" /> },
-    { name: "Analytics", href: "/dashboard/analytics", icon: <TrendingUp className="w-5 h-5" /> },
   ];
 
   const isActive = (href: string) =>
@@ -35,7 +33,7 @@ export default function Sidebar() {
       {/* Navigation Links */}
       <div className="flex-1 py-6 px-4 flex flex-col gap-1 overflow-y-auto">
         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2">
-          Main Menu
+          Menú principal
         </div>
         {navigation.map((item) => (
           <Link
@@ -55,16 +53,16 @@ export default function Sidebar() {
 
       {/* Sidebar Footer */}
       <div className="p-4 border-t border-slate-800 flex flex-col gap-1">
-        <Link 
-          href="/dashboard/settings" 
+        <Link
+          href="/dashboard/settings"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
         >
           <Settings className="w-5 h-5" />
-          <span className="font-medium">Settings</span>
+          <span className="font-medium">Configuración</span>
         </Link>
         <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors text-left w-full mt-2">
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign out</span>
+          <span className="font-medium">Cerrar sesión</span>
         </button>
       </div>
     </div>
