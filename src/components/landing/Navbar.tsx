@@ -7,12 +7,21 @@ import clsx from "clsx";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { twMerge } from "tailwind-merge";
 import { useTranslations } from "next-intl";
+import { LogOut } from "lucide-react";
 
 export function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
-export default function Navbar() {
+export default function Navbar({ 
+  onLogin, 
+  isAuthenticated = false,
+  onLogout 
+}: { 
+  onLogin?: () => void;
+  isAuthenticated?: boolean;
+  onLogout?: () => void;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const t = useTranslations("Navbar");
 
@@ -55,7 +64,7 @@ export default function Navbar() {
                 height={36} 
                 className={cn(
                   "w-full h-full object-contain transition-all duration-500",
-                  scrolled && "brightness-0 invert"
+                  scrolled ? "brightness-0 invert" : "brightness-100"
                 )} 
               />
             </div>
@@ -63,10 +72,10 @@ export default function Navbar() {
             <span
               className={cn(
                 "font-bold text-xl tracking-tight transition-all duration-500 overflow-hidden whitespace-nowrap",
-                scrolled ? "max-w-0 opacity-0 ml-0" : "max-w-[100px] opacity-100 text-slate-900 ml-1"
+                scrolled ? "max-w-0 opacity-0 pointer-events-none" : "max-w-[150px] opacity-100 text-slate-900 ml-2"
               )}
             >
-              Findr.ai
+              Findrai
             </span>
           </Link>
         </div>
@@ -92,8 +101,8 @@ export default function Navbar() {
         {/* Right: Auth / CTA Buttons & Language */}
         <div className="flex items-center gap-3 lg:gap-4 z-10">
           <LanguageSwitcher scrolled={scrolled} />
-          <Link
-            href="/login"
+          <button
+            onClick={isAuthenticated ? undefined : onLogin}
             className={cn(
               "px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap",
               scrolled
@@ -101,8 +110,21 @@ export default function Navbar() {
                 : "bg-slate-900 text-white hover:bg-slate-800"
             )}
           >
-            {t("login")}
-          </Link>
+            {isAuthenticated ? "Dashboard" : t("login")}
+          </button>
+          
+          {isAuthenticated && (
+            <button
+              onClick={onLogout}
+              className={cn(
+                "p-2 rounded-full transition-colors",
+                scrolled ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900"
+              )}
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </nav>
     </div>

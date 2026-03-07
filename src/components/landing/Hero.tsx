@@ -92,13 +92,7 @@ export default function Hero({
               {t("description")}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-              <button 
-                onClick={onPrimaryAction}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              >
-                {isAuthenticated ? 'Ir al dashboard' : t("startComparing")} <ArrowRight className="w-5 h-5" />
-              </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto mt-4">
               <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 hover:text-findrai-primary font-semibold text-lg transition-all border border-slate-200 hover:border-findrai-light hover:bg-slate-50 hover:shadow-sm flex items-center justify-center gap-2 group">
                 <Play className="w-5 h-5 text-slate-400 group-hover:text-findrai-primary transition-colors" />{" "}
                 {t("seeHowItWorks")}
