@@ -1,17 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Server-only admin client (uses service role key — bypasses RLS).
+ * Server-only admin client (uses service role / secret key — bypasses RLS).
  * NEVER import this in client components or expose it to the browser.
- * Use exclusively inside API route handlers (src/app/api/**).
+ *
+ * Supports both the new Supabase key format (sb_secret_...) and the legacy
+ * service_role JWT key. Falls back gracefully when no admin key is available.
  */
 export function createAdminSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Support new key name, legacy key name, and publishable key as last resort
+  const key =
+    process.env.SUPABASE_SECRET_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
     throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+      'Missing Supabase credentials. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) in your .env file.'
     );
   }
 

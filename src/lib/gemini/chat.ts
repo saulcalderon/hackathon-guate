@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { ChatMessage } from '@/types/solicitudes';
+import type { ChatMessage, SolicitudInput } from '@/types/solicitudes';
 
 const MODEL = 'gemini-1.5-flash';
 
@@ -14,6 +14,39 @@ Cuando respondas:
 - No inventes información que no esté en los datos proporcionados.
 - Si no tienes suficiente información para responder, dilo claramente y sugiere qué preguntar al proveedor.`;
 
+const URGENCIA_LABEL: Record<string, string> = {
+  normal: 'Normal (5 días hábiles)',
+  urgente: 'Urgente (48 horas)',
+  critico: 'Crítico (24 horas)',
+};
+
+function buildContextPreamble(contexto: string, solicitud?: SolicitudInput): string {
+  if (!solicitud) {
+    return `Estos son los resultados de la búsqueda de proveedores para esta solicitud:\n\n${contexto}`;
+  }
+
+  const prioridadesStr = solicitud.prioridades.length > 0
+    ? solicitud.prioridades.join(' > ')
+    : 'No especificadas';
+
+  const categoriasStr = solicitud.categorias.join(', ');
+  const urgenciaStr = URGENCIA_LABEL[solicitud.urgencia] ?? solicitud.urgencia;
+
+  return `=== SOLICITUD DEL COMPRADOR ===
+Descripción: "${solicitud.descripcion}"
+Categorías: ${categoriasStr}
+Urgencia: ${urgenciaStr}
+Prioridades del comprador (en orden): ${prioridadesStr}${solicitud.presupuesto_referencial ? `\nPresupuesto referencial: ${solicitud.presupuesto_referencial}` : ''}
+
+=== PROVEEDORES ENCONTRADOS ===
+${contexto}
+
+=== INSTRUCCIÓN ===
+Pesa tus recomendaciones según las prioridades del comprador indicadas arriba.
+Al final de tu PRIMERA respuesta únicamente, agrega exactamente esta línea (sin texto adicional después):
+SUGERENCIAS:["pregunta corta 1","pregunta corta 2","pregunta corta 3"]`;
+}
+
 /**
  * Sends a conversation to Gemini with the supplier results as context.
  *
@@ -21,10 +54,12 @@ Cuando respondas:
  * as a system-level prefix — it is NOT repeated on every turn.
  *
  * `messages` is the full conversation history including the latest user message.
+ * `solicitud` (optional) enriches the context with buyer priorities and structured sections.
  */
 export async function chatWithContext(
   messages: ChatMessage[],
-  contexto: string
+  contexto: string,
+  solicitud?: SolicitudInput
 ): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -37,23 +72,17 @@ export async function chatWithContext(
     systemInstruction: SYSTEM_INSTRUCTION,
   });
 
-  // Build a chat history for the Gemini multi-turn API.
-  // The context is prepended as the first user→model exchange so Gemini
-  // "knows" the data without it being repeated in every user turn.
-  const contextPreamble = `Estos son los resultados de la búsqueda de proveedores para esta solicitud:\n\n${contexto}`;
+  const contextPreamble = buildContextPreamble(contexto, solicitud);
 
-  // All messages except the last one form the history; the last is the current prompt.
   const history = [
-    // Inject context as a synthetic first turn
     {
       role: 'user' as const,
       parts: [{ text: contextPreamble }],
     },
     {
       role: 'model' as const,
-      parts: [{ text: 'Entendido. He analizado los resultados. ¿En qué puedo ayudarte?' }],
+      parts: [{ text: 'Entendido. He analizado los resultados y las prioridades del comprador. ¿En qué puedo ayudarte?' }],
     },
-    // Real conversation turns (all except the final user message)
     ...messages.slice(0, -1).map((m) => ({
       role: m.role === 'user' ? ('user' as const) : ('model' as const),
       parts: [{ text: m.content }],

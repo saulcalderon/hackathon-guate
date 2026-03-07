@@ -14,8 +14,10 @@ import {
   Bot,
   User,
   RefreshCw,
+  Trophy,
+  Ban,
 } from 'lucide-react';
-import type { ResultadoProveedor, ChatMessage } from '@/types/solicitudes';
+import type { ResultadoProveedor, ChatMessage, EstadoSesion } from '@/types/solicitudes';
 import type { ChatApiResponse } from '@/types/solicitudes';
 import type { ApiError } from '@/types/cotizaciones';
 
@@ -23,6 +25,9 @@ interface ResultadosChatProps {
   resultados: ResultadoProveedor[];
   contexto: string;
   onReset: () => void;
+  sessionId?: string;
+  initialMessages?: ChatMessage[];
+  sesionEstado?: EstadoSesion;
 }
 
 const MONEDA_SYMBOL: Record<string, string> = {
@@ -37,13 +42,28 @@ const DISPONIBILIDAD_CONFIG = {
   sin_stock: { label: 'Sin stock', className: 'bg-red-100 text-red-700' },
 };
 
+function parseSugerencias(text: string): string[] {
+  const match = text.match(/SUGERENCIAS:\s*(\[.*?\])/s);
+  if (!match) return [];
+  try {
+    const arr = JSON.parse(match[1]) as unknown;
+    if (Array.isArray(arr)) return arr.filter((x): x is string => typeof x === 'string').slice(0, 3);
+  } catch {
+    // ignore parse errors
+  }
+  return [];
+}
+
+function stripSugerencias(text: string): string {
+  return text.replace(/\n*SUGERENCIAS:\s*\[.*?\]/s, '').trim();
+}
+
 function ProveedorResultCard({ r, rank }: { r: ResultadoProveedor; rank: number }) {
   const sym = MONEDA_SYMBOL[r.moneda] ?? '';
   const disp = DISPONIBILIDAD_CONFIG[r.disponibilidad];
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Header */}
       <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-findrai-primary/10 text-findrai-primary font-bold text-sm flex items-center justify-center shrink-0">
@@ -64,12 +84,10 @@ function ProveedorResultCard({ r, rank }: { r: ResultadoProveedor; rank: number 
         </div>
       </div>
 
-      {/* Description */}
       <div className="px-4 pt-3 pb-2">
         <p className="text-xs text-slate-600 leading-relaxed">{r.descripcion_producto}</p>
       </div>
 
-      {/* Meta */}
       <div className="px-4 pb-3 grid grid-cols-2 gap-x-4 gap-y-1.5 mt-1">
         <div className="flex items-center gap-1.5 text-xs text-slate-600">
           <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -87,7 +105,6 @@ function ProveedorResultCard({ r, rank }: { r: ResultadoProveedor; rank: number 
         )}
       </div>
 
-      {/* Pros / Contras */}
       <div className="px-4 pb-4 grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
         <div>
           <div className="flex items-center gap-1 mb-1.5">
@@ -126,20 +143,36 @@ export default function ResultadosChat({
   resultados,
   contexto,
   onReset,
+  sessionId,
+  initialMessages,
+  sesionEstado,
 }: ResultadosChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages ?? []);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [initDone, setInitDone] = useState(false);
+  const [sugerencias, setSugerencias] = useState<string[]>([]);
+  const [sugerenciasUsadas, setSugerenciasUsadas] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new messages
+  const isDisabled = sesionEstado === 'resuelta' || sesionEstado === 'cancelada';
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Fire initial analysis as soon as results are available
+  // If we have initialMessages from DB, extract sugerencias from first assistant message
   useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setInitDone(true);
+      const firstAssistant = initialMessages.find((m) => m.role === 'assistant');
+      if (firstAssistant) {
+        const s = parseSugerencias(firstAssistant.content);
+        if (s.length > 0) setSugerencias(s);
+      }
+      return;
+    }
+
     if (initDone) return;
     setInitDone(true);
 
@@ -152,6 +185,15 @@ export default function ResultadosChat({
     sendMessage([primer]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const persistMessages = async (msgs: ChatMessage[]) => {
+    if (!sessionId) return;
+    await fetch(`/api/solicitudes/${sessionId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensajes: msgs }),
+    });
+  };
 
   const sendMessage = async (msgs: ChatMessage[]) => {
     setLoading(true);
@@ -168,33 +210,46 @@ export default function ResultadosChat({
 
       if (!res.ok || 'error' in data) {
         const errMsg = 'error' in data ? data.error : 'Error desconocido';
-        setMessages([
+        const updated: ChatMessage[] = [
           ...msgs,
           { role: 'assistant', content: `Lo siento, ocurrió un error: ${errMsg}` },
-        ]);
+        ];
+        setMessages(updated);
         return;
       }
 
-      setMessages([...msgs, { role: 'assistant', content: data.reply }]);
+      const rawReply = data.reply;
+      const s = parseSugerencias(rawReply);
+      if (s.length > 0 && !sugerenciasUsadas) setSugerencias(s);
+
+      const cleanReply = stripSugerencias(rawReply);
+      const updated: ChatMessage[] = [...msgs, { role: 'assistant', content: cleanReply }];
+      setMessages(updated);
+      await persistMessages(updated);
     } catch (err) {
-      setMessages([
+      const updated: ChatMessage[] = [
         ...msgs,
         {
           role: 'assistant',
           content: `Error de red al conectar con el asistente: ${String(err)}`,
         },
-      ]);
+      ];
+      setMessages(updated);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSend = () => {
-    const text = input.trim();
-    if (!text || loading) return;
+  const handleSend = (text?: string) => {
+    const t = (text ?? input).trim();
+    if (!t || loading || isDisabled) return;
     setInput('');
+    if (text) {
+      setSugerenciasUsadas(true);
+      setSugerencias([]);
+    }
 
-    const userMsg: ChatMessage = { role: 'user', content: text };
+    const userMsg: ChatMessage = { role: 'user', content: t };
     const updated = [...messages, userMsg];
     sendMessage(updated);
   };
@@ -242,6 +297,24 @@ export default function ResultadosChat({
         ))}
       </div>
 
+      {/* Status banners */}
+      {sesionEstado === 'resuelta' && (
+        <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+          <Trophy className="w-5 h-5 text-green-600 shrink-0" />
+          <p className="text-sm text-green-800 font-semibold">
+            Sesión resuelta. El chat está deshabilitado.
+          </p>
+        </div>
+      )}
+      {sesionEstado === 'cancelada' && (
+        <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <Ban className="w-5 h-5 text-slate-500 shrink-0" />
+          <p className="text-sm text-slate-600 font-semibold">
+            Esta solicitud fue cancelada.
+          </p>
+        </div>
+      )}
+
       {/* Chat section */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
@@ -268,12 +341,12 @@ export default function ResultadosChat({
 
           {messages.map((msg, idx) => {
             const isUser = msg.role === 'user';
-            // Hide the automated initial user prompt
             if (idx === 0 && isUser) return null;
 
             return (
               <div
                 key={idx}
+                data-msg-index={idx}
                 className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
               >
                 <div
@@ -300,7 +373,6 @@ export default function ResultadosChat({
             );
           })}
 
-          {/* Loading indicator for follow-up messages */}
           {loading && messages.length > 0 && (
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full bg-findrai-primary/10 flex items-center justify-center shrink-0">
@@ -317,36 +389,55 @@ export default function ResultadosChat({
           <div ref={bottomRef} />
         </div>
 
+        {/* Quick suggestions */}
+        {sugerencias.length > 0 && !sugerenciasUsadas && !loading && !isDisabled && (
+          <div className="px-6 pb-3 flex flex-wrap gap-2">
+            {sugerencias.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => handleSend(s)}
+                className="px-3 py-1.5 text-xs font-semibold text-findrai-primary bg-findrai-primary/5 hover:bg-findrai-primary/10 border border-findrai-primary/20 rounded-full transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Input */}
         <div className="px-6 pb-4 pt-2 border-t border-slate-100">
-          {messages.some((m) => m.role === 'assistant') && (
+          {messages.some((m) => m.role === 'assistant') && !isDisabled && (
             <p className="text-xs text-slate-400 mb-3 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
               Puedes seguir preguntando — el asistente recuerda el contexto de esta búsqueda.
             </p>
           )}
-          <div className="flex gap-3 items-end">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ej: ¿Cuál recomiendas si necesito entrega hoy? ¿El precio incluye IVA?"
-              rows={2}
-              disabled={loading}
-              className="flex-1 px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 transition-colors"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="p-3 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-              aria-label="Enviar mensaje"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-          <p className="text-xs text-slate-400 mt-1.5">
-            Enter para enviar · Shift+Enter para nueva línea
-          </p>
+          {!isDisabled && (
+            <div className="flex gap-3 items-end">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ej: ¿Cuál recomiendas si necesito entrega hoy? ¿El precio incluye IVA?"
+                rows={2}
+                disabled={loading}
+                className="flex-1 px-4 py-3 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-findrai-primary/30 focus:border-findrai-primary resize-none placeholder-slate-400 transition-colors"
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim() || loading}
+                className="p-3 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                aria-label="Enviar mensaje"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {!isDisabled && (
+            <p className="text-xs text-slate-400 mt-1.5">
+              Enter para enviar · Shift+Enter para nueva línea
+            </p>
+          )}
         </div>
       </div>
     </div>

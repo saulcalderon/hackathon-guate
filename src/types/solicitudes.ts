@@ -72,3 +72,35 @@ export interface ChatApiRequest {
 export interface ChatApiResponse {
   reply: string;
 }
+
+// ────────────────────────────────────────────────────────────
+// Sesion (session persistence)
+// ────────────────────────────────────────────────────────────
+
+export type EstadoSesion = 'activa' | 'resuelta' | 'cancelada';
+
+export interface SesionSolicitud {
+  id: string;
+  descripcion: string;
+  categorias: string[];
+  modo: ModoBusqueda;
+  urgencia: Urgencia;
+  prioridades: PrioridadClave[];
+  presupuesto: string | null;
+  resultados: ResultadoProveedor[];
+  mensajes: ChatMessage[];
+  proveedor_elegido: string | null;
+  estado: EstadoSesion;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SolicitudApiResponse {
+  id: string;
+}
+
+export interface SesionPatchRequest {
+  mensajes?: ChatMessage[];
+  estado?: EstadoSesion;
+  proveedor_elegido?: string | null;
+}

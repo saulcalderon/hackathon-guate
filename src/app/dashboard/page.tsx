@@ -46,7 +46,7 @@ export default function DashboardPage() {
           <p className="text-slate-500 text-sm mt-1">Welcome back. Here&apos;s what&apos;s happening today.</p>
         </div>
         <Link
-          href="/dashboard/solicitudes"
+          href="/dashboard/solicitudes/nueva"
           className="flex items-center gap-2 px-5 py-2.5 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl font-semibold transition-colors shadow-sm w-fit"
         >
           <Search className="w-5 h-5" />
@@ -138,7 +138,7 @@ export default function DashboardPage() {
           </div>
 
           <Link
-            href="/dashboard/solicitudes"
+            href="/dashboard/solicitudes/nueva"
             className="w-full flex items-center justify-center gap-2 py-3 bg-white text-findrai-primary font-bold rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
           >
             <Search className="w-4 h-4" />
