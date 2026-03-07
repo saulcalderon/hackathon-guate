@@ -1,11 +1,11 @@
-import { Upload, Cpu, ArrowRightLeft, CheckCircle2, ArrowRight } from "lucide-react";
+import { Globe, Cpu, ArrowRightLeft, CheckCircle2, ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function SolutionSection() {
   const t = useTranslations("Solution");
   const steps = [
     {
-      icon: <Upload className="w-6 h-6" />,
+      icon: <Globe className="w-6 h-6" />,
       title: t("step1Title"),
       description: t("step1Desc"),
     },
