@@ -142,7 +142,7 @@ export async function scrapeVendor(
         },
       ],
       onlyMainContent: true,
-      fastMode: true,
+      // fastMode: true,
     });
 
     const data = result.json as

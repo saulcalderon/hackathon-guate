@@ -17,7 +17,7 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { sesion_id, proveedor_nombre, proveedor_display, descripcion_producto, cantidad, precio_estimado, moneda } = body;
+  const { sesion_id, proveedor_nombre, descripcion_producto, cantidad, precio_estimado, moneda } = body;
 
   if (!sesion_id || !proveedor_nombre || !descripcion_producto || !cantidad || precio_estimado == null || !moneda) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

@@ -141,7 +141,7 @@ export default function PlanesPage() {
       {/* Comision info */}
       <div className="text-center">
         <p className="text-xs text-slate-400">
-          Los créditos no vencen. El servicio "Comprar con Findrai" tiene una comisión del {COMISION_FINDRAI_PCT}% sobre el valor del producto, independiente del plan.
+          Los créditos no vencen. El servicio &quot;Comprar con Findrai&quot; tiene una comisión del {COMISION_FINDRAI_PCT}% sobre el valor del producto, independiente del plan.
         </p>
         <Link href="/dashboard" className="text-xs text-findrai-primary hover:underline mt-1 inline-block">
           ← Volver al overview

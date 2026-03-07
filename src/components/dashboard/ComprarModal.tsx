@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, ShoppingCart, Loader2, CheckCircle2 } from 'lucide-react';
+import { X, FileText, Loader2, CheckCircle2 } from 'lucide-react';
 import { COMISION_FINDRAI_PCT } from '@/lib/constants/planes';
 import type { ResultadoProveedor } from '@/types/solicitudes';
 
@@ -61,8 +61,8 @@ export default function ComprarModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-green-600" />
-            <h2 className="font-bold text-slate-900">Comprar con Findrai</h2>
+            <FileText className="w-5 h-5 text-green-600" />
+            <h2 className="font-bold text-slate-900">Crear cotización</h2>
           </div>
           <button
             onClick={onClose}
@@ -79,7 +79,7 @@ export default function ComprarModal({
               <CheckCircle2 className="w-7 h-7 text-green-600" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-lg">¡Orden creada!</p>
+              <p className="font-bold text-slate-900 text-lg">¡Cotización creada!</p>
               <p className="text-slate-500 text-sm mt-1">
                 Nuestro equipo se pondrá en contacto contigo en las próximas horas para confirmar los detalles.
               </p>
@@ -167,9 +167,9 @@ export default function ComprarModal({
                 className="flex-1 py-2.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Creando…</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Generando…</>
                 ) : (
-                  <><ShoppingCart className="w-4 h-4" /> Confirmar orden</>
+                  <><FileText className="w-4 h-4" /> Generar cotización</>
                 )}
               </button>
             </div>

@@ -43,7 +43,7 @@ const DISPONIBILIDAD_CONFIG = {
 };
 
 function parseSugerencias(text: string): string[] {
-  const match = text.match(/SUGERENCIAS:\s*(\[.*?\])/s);
+  const match = text.match(/SUGERENCIAS:\s*(\[[\s\S]*?\])/);
   if (!match) return [];
   try {
     const arr = JSON.parse(match[1]) as unknown;
@@ -55,7 +55,7 @@ function parseSugerencias(text: string): string[] {
 }
 
 function stripSugerencias(text: string): string {
-  return text.replace(/\n*SUGERENCIAS:\s*\[.*?\]/s, '').trim();
+  return text.replace(/\n*SUGERENCIAS:\s*\[[\s\S]*?\]/, '').trim();
 }
 
 function ProveedorResultCard({ r, rank }: { r: ResultadoProveedor; rank: number }) {

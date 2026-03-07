@@ -28,10 +28,10 @@ function safeEnqueue(
   try {
     controller.enqueue(data);
   } catch (e) {
+    const err = e as Error & { code?: string };
     if (
-      e instanceof TypeError &&
-      (e as Error).message?.includes("closed") ||
-      (e as Error).code === "ERR_INVALID_STATE"
+      (e instanceof TypeError && err.message?.includes("closed")) ||
+      err.code === "ERR_INVALID_STATE"
     ) {
       return;
     }

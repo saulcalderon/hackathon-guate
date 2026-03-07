@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import SolicitudForm from '@/components/dashboard/SolicitudForm';
-import { getMockResultados } from '@/lib/mock/resultados';
 import type { SolicitudInput } from '@/types/solicitudes';
 
 export default function NuevaSolicitudPage() {
@@ -13,39 +12,9 @@ export default function NuevaSolicitudPage() {
 
   const handleSubmit = async (input: SolicitudInput) => {
     setSearching(true);
-
-    await new Promise((r) => setTimeout(r, 800));
-
-    const resultados = getMockResultados(input.categorias);
-
-    try {
-      const res = await fetch('/api/solicitudes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          descripcion: input.descripcion,
-          categorias: input.categorias,
-          modo: input.modo,
-          urgencia: input.urgencia,
-          prioridades: input.prioridades,
-          presupuesto: input.presupuesto_referencial ?? null,
-          resultados,
-        }),
-      });
-
-      const data = (await res.json()) as { id: string } | { error: string };
-
-      if (!res.ok || 'error' in data) {
-        console.error('Error creating session:', 'error' in data ? data.error : 'Unknown');
-        setSearching(false);
-        return;
-      }
-
-      router.push(`/dashboard/solicitudes/${data.id}`);
-    } catch (err) {
-      console.error('Network error:', err);
-      setSearching(false);
-    }
+    // Only use descripcion for the scrape flow; other fields are not sent to the API
+    router.push(`/dashboard/solicitudes/buscando?q=${encodeURIComponent(input.descripcion)}`);
+    setSearching(false);
   };
 
   return (
