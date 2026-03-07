@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import SesionTimeline from '@/components/dashboard/SesionTimeline';
-import ResultadosChat from '@/components/dashboard/ResultadosChat';
+import ResultadosChat from '@/components/dashboard/ResultadosChatV2';
 import type { SesionSolicitud } from '@/types/solicitudes';
 
 interface PageProps {

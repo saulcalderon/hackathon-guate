@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search } from "lucide-react";
+import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search, ShoppingCart, Zap } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -10,6 +10,8 @@ export default function Sidebar() {
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
     { name: "Solicitudes", href: "/dashboard/solicitudes", icon: <Search className="w-5 h-5" /> },
+    { name: "Mis Compras", href: "/dashboard/compras", icon: <ShoppingCart className="w-5 h-5" /> },
+    { name: "Planes", href: "/dashboard/planes", icon: <Zap className="w-5 h-5" /> },
     { name: "Invoices", href: "/dashboard/invoices", icon: <FileText className="w-5 h-5" /> },
     { name: "Suppliers", href: "/dashboard/suppliers", icon: <Users className="w-5 h-5" /> },
     { name: "Analytics", href: "/dashboard/analytics", icon: <TrendingUp className="w-5 h-5" /> },
