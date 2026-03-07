@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String     @id @default(cuid())
+  name      String
+  status    String     @default("draft")
+  materials Material[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Material {
+  id        String        @id @default(cuid())
+  name      String
+  quantity  Float
+  unit      String
+  projectId String
+  project   Project       @relation(fields: [projectId], references: [id])
+  quotes    VendorQuote[]
+}
+
+model VendorQuote {
+  id           String   @id @default(cuid())
+  vendorName   String
+  materialId   String
+  material     Material @relation(fields: [materialId], references: [id])
+  unitPrice    Float
+  totalPrice   Float
+  currency     String   @default("GTQ")
+  source       String
+  status       String   @default("live")
+  brand        String?
+  deliveryTime String?
+  createdAt    DateTime @default(now())
+}
+
+model ScrapeCache {
+  id         String   @id @default(cuid())
+  searchTerm String
+  vendor     String
+  searchUrl  String
+  products   Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([searchTerm, vendor])
+}

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Finr.ai — Intelligent Quote Analyzer",
+  title: "Findr.ai — Agente Digital de Compras",
   description:
-    "Transform unstructured procurement quotes into normalized, tax-compliant comparisons with AI.",
+    "Automatiza la cotización de materiales de construcción con scraping inteligente y optimización de proveedores.",
 };
 
 export default function RootLayout({
