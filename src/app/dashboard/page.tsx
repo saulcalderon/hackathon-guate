@@ -1,4 +1,5 @@
-import { UploadCloud, FileText, DollarSign, TrendingUp, SearchCheck, ArrowRight, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
+import { Search, FileText, DollarSign, TrendingUp, SearchCheck, ArrowRight, MoreHorizontal } from "lucide-react";
 
 export default function DashboardPage() {
   const stats = [
@@ -42,12 +43,15 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-2">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Overview</h1>
-          <p className="text-slate-500 text-sm mt-1">Welcome back. Here's what's happening today.</p>
+          <p className="text-slate-500 text-sm mt-1">Welcome back. Here&apos;s what&apos;s happening today.</p>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl font-semibold transition-colors shadow-sm w-fit">
-          <UploadCloud className="w-5 h-5" />
-          <span>New Comparison</span>
-        </button>
+        <Link
+          href="/dashboard/solicitudes"
+          className="flex items-center gap-2 px-5 py-2.5 bg-findrai-primary hover:bg-findrai-secondary text-white rounded-xl font-semibold transition-colors shadow-sm w-fit"
+        >
+          <Search className="w-5 h-5" />
+          <span>Nueva solicitud</span>
+        </Link>
       </div>
 
       {/* Stats Grid */}
@@ -119,30 +123,27 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Upload Box */}
-        <div className="bg-gradient-to-br from-findrai-primary to-findrai-medium rounded-2xl p-8 shadow-lg text-white flex flex-col justify-between relative overflow-hidden group border border-findrai-light/20">
+        {/* New Request CTA */}
+        <div className="bg-gradient-to-br from-findrai-primary to-findrai-medium rounded-2xl p-8 shadow-lg text-white flex flex-col justify-between relative overflow-hidden border border-findrai-light/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-          
+
           <div>
             <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center mb-6">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Ready to save more?</h3>
+            <h3 className="text-xl font-bold mb-2">¿Listo para cotizar?</h3>
             <p className="text-blue-100 text-sm leading-relaxed mb-8">
-              Drop your latest vendor invoices here to instantly uncover hidden price hikes and better alternatives.
+              Describe lo que necesitas y la IA encuentra y compara proveedores por ti — en segundos.
             </p>
           </div>
 
-          <div className="relative">
-            <div className="border-2 border-dashed border-white/30 rounded-xl p-6 text-center hover:bg-white/5 transition-colors cursor-pointer group-hover:border-white/50">
-              <UploadCloud className="w-8 h-8 mx-auto mb-3 text-blue-200 group-hover:text-white transition-colors" />
-              <div className="text-sm font-medium">Click to upload PDFs</div>
-              <div className="text-xs text-blue-200 mt-1">or drag and drop</div>
-            </div>
-            <button className="w-full mt-4 flex items-center justify-center gap-2 py-3 bg-white text-findrai-primary font-bold rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-              Select Files <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+          <Link
+            href="/dashboard/solicitudes"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-white text-findrai-primary font-bold rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+          >
+            <Search className="w-4 h-4" />
+            Nueva solicitud <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
       </div>

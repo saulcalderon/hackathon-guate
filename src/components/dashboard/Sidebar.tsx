@@ -1,13 +1,22 @@
+'use client';
+
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, FileText, Users, TrendingUp, Settings, LogOut, Search } from "lucide-react";
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   const navigation = [
     { name: "Overview", href: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
+    { name: "Solicitudes", href: "/dashboard/solicitudes", icon: <Search className="w-5 h-5" /> },
     { name: "Invoices", href: "/dashboard/invoices", icon: <FileText className="w-5 h-5" /> },
     { name: "Suppliers", href: "/dashboard/suppliers", icon: <Users className="w-5 h-5" /> },
     { name: "Analytics", href: "/dashboard/analytics", icon: <TrendingUp className="w-5 h-5" /> },
   ];
+
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
     <div className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 text-white min-h-screen fixed left-0 top-0">
@@ -31,8 +40,8 @@ export default function Sidebar() {
             key={item.name}
             href={item.href}
             className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-              item.name === "Overview" 
-                ? "bg-findrai-primary/20 text-findrai-light" 
+              isActive(item.href)
+                ? "bg-findrai-primary/20 text-findrai-light"
                 : "text-slate-400 hover:bg-slate-800 hover:text-white"
             }`}
           >
